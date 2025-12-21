@@ -1,0 +1,75 @@
+{
+    "device": "PI1",
+    "device_map": {
+        "PI1": {
+            "sensors": [
+                "DS1",
+                "DUS1",
+                "DPIR1",
+                "DMS",
+                "DHT1",
+                "WEBC"
+            ],
+            "actuators": [
+                "DL",
+                "DB"
+            ]
+        },
+        "PI2": {
+            "sensors": [
+                "DS2",
+                "DUS2",
+                "DPIR2",
+                "4SD",
+                "BTN",
+                "DHT3"
+            ],
+            "actuators": []
+        },
+        "PI3": {
+            "sensors": [
+                "GSG",
+                "DHT2",
+                "IR",
+                "BRGB",
+                "LCD",
+                "DPIR3"
+            ],
+            "actuators": []
+        }
+    },
+    "hardware": {
+        "DHT1": {
+            "pin": 17,
+            "simulated": true
+        },
+        "DS1": {
+            "pin": 22,
+            "simulated": true
+        },
+        "DUS1": {
+            "trigger_pin": 23,
+            "echo_pin": 24,
+            "simulated": true
+        },
+        "DL": {
+            "pin": 25,
+            "simulated": true
+        },
+        "DB": {
+            "pin": 12,
+            "simulated": true
+        },
+        "DPIR1": {
+            "pin": 27,
+            "simulated": true
+        },
+        "DMS": {
+            "pin": 5,
+            "simulated": true
+        },
+        "WEBC": {
+
+        }
+    }
+}
