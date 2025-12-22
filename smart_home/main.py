@@ -3,7 +3,7 @@ import time
 
 from components.buzzer import buzzer_control
 from components.motion import run_dpir
-from components.door_ultrasonic import run_ds1
+from components.door_button import run_ds1
 from components.led import led_control
 from components.membrane_switch import (
     run_membrane_switch,

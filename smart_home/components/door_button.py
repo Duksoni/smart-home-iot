@@ -1,6 +1,6 @@
 import time
 import threading
-from simulators.door_ultrasonic_sensor import run_door_sensor_simulator
+from simulators.door_button import run_door_sensor_simulator
 
 def ds1_callback(state, code):
     t = time.localtime()
@@ -22,7 +22,7 @@ def run_ds1(settings, threads, stop_event, code):
         threads.append(thread)
         thread.start()
     else:
-        from smart_home.sensors.door_sensor import run_ds1_loop, DS1
+        from sensors.door_button import run_ds1_loop, DS1
         print("Starting real DS1 loop")
         ds1 = DS1(settings["pin"])
         thread = threading.Thread(

@@ -17,6 +17,3 @@ def run_door_sensor_simulator(delay, callback, stop_event, code):
         callback(state, code)
         if stop_event.is_set():
             break
-
-def door_sensor_console(data_code, description, state):
-    print(f"[SIM] {description} ({data_code}) -> {state}")
