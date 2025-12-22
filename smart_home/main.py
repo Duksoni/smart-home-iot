@@ -41,7 +41,7 @@ def console_thread(settings, stop_event):
             print("=" * 20)
             print("Commands:")
             print("led on/off")
-            print("buzzer on/off")
+            print("buzzer short/long/on/off")
             print("dms auto on/off")
             print("dms send <4 digits>")
             print("exit/quit")
