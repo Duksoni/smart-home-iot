@@ -1,4 +1,4 @@
-from smart_home.simulators.dht import run_dht_simulator
+from simulators.dht import run_dht_simulator
 import threading
 import time
 

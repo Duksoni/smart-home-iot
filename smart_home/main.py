@@ -2,13 +2,14 @@ import threading
 import time
 
 from settings import load_settings, get_device_config
-from smart_home.components.buzzer import buzzer_control
-from smart_home.components.dht import run_dht
-from smart_home.components.led import led_control
+from components.buzzer import buzzer_control
+from components.dht import run_dht
+from components.led import led_control
+from components.door_sensor import run_ds1
 
 RUNNERS = {
     "DHT1": run_dht,
-    # "DS1": run_door_sensor,
+    "DS1": run_ds1,
     # ...
 }
 
