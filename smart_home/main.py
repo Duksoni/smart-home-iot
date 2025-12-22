@@ -2,6 +2,7 @@ import threading
 import time
 
 from components.buzzer import buzzer_control
+from components.motion import run_dpir
 from components.door_ultrasonic import run_ds1
 from components.led import led_control
 from components.membrane_switch import (
@@ -16,6 +17,7 @@ RUNNERS = {
     # "DHT1": run_dht,
     "DS1": run_ds1,
     "DMS": run_membrane_switch,
+    "DPIR1": run_dpir,
     # ...
 }
 
