@@ -2,7 +2,7 @@ import threading
 import time
 
 from components.buzzer import buzzer_control
-from components.door_sensor import run_ds1
+from components.door_ultrasonic import run_ds1
 from components.led import led_control
 from components.membrane_switch import (
     run_membrane_switch,

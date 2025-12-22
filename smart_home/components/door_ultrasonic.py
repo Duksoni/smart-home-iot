@@ -1,6 +1,6 @@
 import time
 import threading
-from simulators.door_sensor import run_door_sensor_simulator
+from simulators.door_ultrasonic_sensor import run_door_sensor_simulator
 
 def ds1_callback(state, code):
     t = time.localtime()
