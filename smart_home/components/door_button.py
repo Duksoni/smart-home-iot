@@ -22,11 +22,11 @@ def run_ds1(settings, threads, stop_event, code):
         threads.append(thread)
         thread.start()
     else:
-        from sensors.door_button import run_ds1_loop, DS1
+        from sensors.door_button import run_ds_loop, DS
         print("Starting real DS1 loop")
-        ds1 = DS1(settings["pin"])
+        ds1 = DS(settings["pin"])
         thread = threading.Thread(
-            target=run_ds1_loop,
+            target=run_ds_loop,
             args=(ds1, 5, ds1_callback, stop_event, code),
             name="sensor-ds1",
             daemon=True

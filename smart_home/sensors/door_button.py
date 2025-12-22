@@ -1,7 +1,7 @@
 import RPi.GPIO as GPIO
 import time
 
-class DS1(object):
+class DS(object):
     DOOR_CLOSED = 0
     DOOR_OPEN = 1
 
@@ -15,12 +15,12 @@ class DS1(object):
             return self.DOOR_OPEN
         return self.DOOR_CLOSED
     
-def run_ds1_loop(ds1, delay, callback, stop_event):
+def run_ds_loop(ds, delay, callback, stop_event, code):
     last_state = None
     while True:
-        state = ds1.read()
+        state = ds.read()
         if state != last_state:
-            callback(state)
+            callback(state, code)
             last_state = state
         if  stop_event.is_set():
             break
