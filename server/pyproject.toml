@@ -1,0 +1,15 @@
+[project]
+name = "smart-home-iot-server"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi[standard]>=0.128.0",
+    "influxdb-client>=1.50.0",
+    "paho-mqtt>=2.1.0",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.14.14",
+]
