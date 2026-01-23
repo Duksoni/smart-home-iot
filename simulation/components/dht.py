@@ -22,7 +22,7 @@ def run_dht(settings, threads, stop_event, code):
         threads.append(thread)
         thread.start()
     else:
-        from smart_home.sensors.dht import run_dht_loop, DHT
+        from simulation.sensors.dht import run_dht_loop, DHT
         print("Starting real DHT1 loop")
         dht = DHT(settings["pin"])
         thread = threading.Thread(
