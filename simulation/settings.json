@@ -71,5 +71,12 @@
         "WEBC": {
 
         }
+    },
+    "mqtt": {
+        "host": "localhost",
+        "port": 1883,
+        "base_topic": "smarthome",
+        "batch_size": 10,
+        "flush_interval": 2.0
     }
 }

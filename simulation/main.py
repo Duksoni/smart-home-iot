@@ -12,6 +12,7 @@ from components.membrane_switch import (
     start_auto,
     stop_auto,
 )
+from mqtt_publisher import init_mqtt
 from settings import get_device_config, load_settings
 
 RUNNERS = {
@@ -88,6 +89,7 @@ def console_thread(settings, stop_event):
 if __name__ == "__main__":
     print("Starting PI1 controller")
     settings = load_settings()
+    init_mqtt(settings)
     device_config, hardware_config = get_device_config(settings)
 
     threads = []
