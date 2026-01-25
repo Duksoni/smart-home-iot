@@ -11,6 +11,7 @@ class Settings(BaseSettings):
 
     mqtt_host: str
     mqtt_port: int
+    mqtt_topic_prefix: str
 
     class Config:
         env_file = ".env"
