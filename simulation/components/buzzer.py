@@ -1,3 +1,36 @@
+from mqtt_publisher import build_topic, get_base_topic, get_device_name, get_publisher
+
+ACTION_VALUES = {
+    "short": 1,
+    "long": 2,
+    "start": 3,
+    "stop": 0,
+}
+
+_BUZZERS = {}
+
+
+def _get_buzzer(settings):
+    from actuators.buzzer import DB
+
+    code = settings.get("code", "DB")
+    buzzer = _BUZZERS.get(code)
+    if buzzer:
+        return buzzer
+    pin = settings.get("pin")
+    if pin is None:
+        raise ValueError("Buzzer pin is not configured")
+    buzzer = DB(
+        pin,
+        active_high=settings.get("active_high", True),
+        pwm=settings.get("pwm", False),
+        frequency=settings.get("frequency", 2000),
+        duty_cycle=settings.get("duty_cycle", 50),
+    )
+    _BUZZERS[code] = buzzer
+    return buzzer
+
+
 def buzzer_control(settings, command):
     cmd = (command or "").lower()
 
@@ -20,13 +53,29 @@ def buzzer_control(settings, command):
         else:
             print(f"[SIM] Buzzer -> unknown command: {command}")
     else:
+        buzzer = _get_buzzer(settings)
         if cmd == "short":
-            print("[GPIO] Buzzer -> short pulse")
+            buzzer.short_beep()
         elif cmd == "long":
-            print("[GPIO] Buzzer -> long pulse")
+            buzzer.long_beep()
         elif cmd == "start":
-            print("[GPIO] Buzzer -> start continuous")
+            buzzer.start()
         elif cmd == "stop":
-            print("[GPIO] Buzzer -> stop")
+            buzzer.stop()
         else:
             print(f"[GPIO] Buzzer -> unknown command: {command}")
+
+    if cmd in ACTION_VALUES:
+        publisher = get_publisher()
+        if publisher:
+            code = settings.get("code", "DB")
+            payload = {
+                "measurement": "buzzer",
+                "value": ACTION_VALUES[cmd],
+                "action": cmd,
+                "simulated": settings.get("simulated", True),
+                "device": get_device_name(),
+                "code": code,
+            }
+            topic = build_topic(get_base_topic(), "actuators", code)
+            publisher.enqueue_json(topic, payload)
