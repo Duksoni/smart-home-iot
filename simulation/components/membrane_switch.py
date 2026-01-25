@@ -1,6 +1,7 @@
 import threading
 import time
 
+from mqtt_publisher import build_topic, get_base_topic, get_device_name, get_publisher
 from simulators.membrane_switch import run_membrane_switch_simulator
 
 _valid_keys = [str(i) for i in range(10)] + ["#"]
@@ -29,17 +30,43 @@ def send_key(settings, key):
         _current_attempt = []
         return
     _current_attempt.append(key)
+    code = settings.get("code", "DMS")
 
     if settings.get("simulated"):
         print(f"[SIM] DMS -> Key accepted: {key}")
     else:
         print(f"[GPIO] DMS -> Key accepted: {key}")
 
+    publisher = get_publisher()
+    if publisher:
+        key_value = 10 if key == "#" else int(key)
+        key_payload = {
+            "measurement": "membrane_key",
+            "value": key_value,
+            "key": key,
+            "simulated": settings.get("simulated", True),
+            "device": get_device_name(),
+            "code": code,
+        }
+        key_topic = build_topic(get_base_topic(), "sensors", code)
+        publisher.enqueue_json(key_topic, key_payload)
+
     if key != "#":
         return
 
     attempt = consume_current()
-    print("Password accepted!" if attempt == _password else "Wrong password! Try again.")
+    success = attempt == _password
+    print("Password accepted!" if success else "Wrong password! Try again.")
+    if publisher:
+        attempt_payload = {
+            "measurement": "membrane_attempt",
+            "value": 1 if success else 0,
+            "simulated": settings.get("simulated", True),
+            "device": get_device_name(),
+            "code": code,
+        }
+        attempt_topic = build_topic(get_base_topic(), "sensors", code)
+        publisher.enqueue_json(attempt_topic, attempt_payload)
 
 
 def run_membrane_switch(settings, threads, stop_event, code):
@@ -76,7 +103,10 @@ def start_auto(settings, threads=None, delay=2):
 
     _auto_stop_event = threading.Event()
     _auto_thread = threading.Thread(
-        target=_auto_worker, args=(delay, settings, _auto_stop_event), name="simulator-dms-auto", daemon=True
+        target=_auto_worker,
+        args=(delay, settings, _auto_stop_event),
+        name="simulator-dms-auto",
+        daemon=True,
     )
     if threads is not None:
         threads.append(_auto_thread)
