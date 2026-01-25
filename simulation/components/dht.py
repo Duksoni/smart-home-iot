@@ -1,99 +1,69 @@
-from simulators.dht import run_dht_simulator
 import threading
 import time
-import json
-import paho.mqtt.publish as publish
-from broker_settings import HOSTNAME, PORT
+
+from mqtt_publisher import build_topic, get_base_topic, get_device_name, get_publisher
+from simulators.dht import run_dht_simulator
 
 
-dht_batch = []
-publish_data_counter = 0
-publish_data_limit = 5
-counter_lock = threading.Lock()
-
-
-def publisher_task(event, dht_batch):
-    global publish_data_counter, publish_data_limit
-    while True:
-        event.wait()
-        with counter_lock:
-            local_dht_batch = dht_batch.copy()
-            publish_data_counter = 0
-            dht_batch.clear()
-        publish.multiple(local_dht_batch, hostname=HOSTNAME, port=PORT)
-        print(f"published {publish_data_limit} dht values")
-        event.clear()
-
-
-publish_event = threading.Event()
-publisher_thread = threading.Thread(
-    target=publisher_task,
-    args=(
-        publish_event,
-        dht_batch,
-    ),
-)
-publisher_thread.daemon = True
-publisher_thread.start()
-
-
-def dht_callback(
-    humidity, temperature, publish_event, dht_settings, code="DHTLIB_OK", verbose=False
-):
-    global publish_data_counter, publish_data_limit
-
+def dht_callback(humidity, temperature, status, dht_settings, code, verbose=False):
     if verbose:
         t = time.localtime()
         print("=" * 20)
         print(f"Timestamp: {time.strftime('%H:%M:%S', t)}")
-        print(f"Code: {code}")
+        print(f"Status: {status}")
         print(f"Humidity: {humidity}%")
         print(f"Temperature: {temperature}°C")
 
+    publisher = get_publisher()
+    if not publisher:
+        return
+
+    topic = build_topic(get_base_topic(), "sensors", code)
+    base_payload = {
+        "simulated": dht_settings.get("simulated", True),
+        "device": get_device_name(),
+        "code": code,
+    }
     temp_payload = {
         "measurement": "Temperature",
-        "simulated": dht_settings["simulated"],
-        "runs_on": dht_settings["runs_on"],
-        "name": dht_settings["name"],
         "value": temperature,
+        **base_payload,
     }
-
     humidity_payload = {
         "measurement": "Humidity",
-        "simulated": dht_settings["simulated"],
-        "runs_on": dht_settings["runs_on"],
-        "name": dht_settings["name"],
         "value": humidity,
+        **base_payload,
     }
-
-    with counter_lock:
-        dht_batch.append(("Temperature", json.dumps(temp_payload), 0, True))
-        dht_batch.append(("Humidity", json.dumps(humidity_payload), 0, True))
-        publish_data_counter += 1
-
-    if publish_data_counter >= publish_data_limit:
-        publish_event.set()
+    publisher.enqueue_json(topic, temp_payload)
+    publisher.enqueue_json(topic, humidity_payload)
 
 
-def run_dht(settings, threads, stop_event):
-    if settings["simulated"]:
-        print("Starting dht1 sumilator")
-        dht1_thread = threading.Thread(
+def run_dht(settings, threads, stop_event, code):
+    sensor_code = code or settings.get("code", "DHT1")
+
+    def callback(humidity, temperature, status):
+        dht_callback(humidity, temperature, status, settings, sensor_code)
+
+    if settings.get("simulated", True):
+        print(f"Starting simulated {sensor_code}")
+        thread = threading.Thread(
             target=run_dht_simulator,
-            args=(2, dht_callback, stop_event, publish_event, settings),
+            args=(2, callback, stop_event, "DHTLIB_OK"),
+            name=f"simulator-{sensor_code.lower()}",
+            daemon=True,
         )
-        dht1_thread.start()
-        threads.append(dht1_thread)
-        print("Dht1 sumilator started")
+        threads.append(thread)
+        thread.start()
     else:
-        from sensors.dht import run_dht_loop, DHT
+        from sensors.dht import DHT, run_dht_loop
 
-        print("Starting dht1 loop")
+        print(f"Starting real {sensor_code} loop")
         dht = DHT(settings["pin"])
-        dht1_thread = threading.Thread(
+        thread = threading.Thread(
             target=run_dht_loop,
-            args=(dht, 2, dht_callback, stop_event, publish_event, settings),
+            args=(dht, 2, callback, stop_event),
+            name=f"sensor-{sensor_code.lower()}",
+            daemon=True,
         )
-        dht1_thread.start()
-        threads.append(dht1_thread)
-        print("Dht1 loop started")
+        threads.append(thread)
+        thread.start()
