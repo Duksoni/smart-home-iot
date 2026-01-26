@@ -1,7 +1,7 @@
 import RPi.GPIO as GPIO
 import time
 
-class DS(object):
+class DS:
     DOOR_CLOSED = 0
     DOOR_OPEN = 1
 
