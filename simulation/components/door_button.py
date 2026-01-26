@@ -47,7 +47,7 @@ def run_ds1(settings, threads, stop_event, code):
         thread = threading.Thread(
             target=run_ds_loop,
             args=(ds1, 5, callback, stop_event, code),
-            name=f"simulator-{code.lower()}",
+            name=f"sensor-{code.lower()}",
             daemon=True
         )
         threads.append(thread)
