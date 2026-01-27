@@ -3,7 +3,7 @@ import time
 import RPi.GPIO as GPIO
 
 
-class DHT(object):
+class DHT:
     DHTLIB_OK = 0
     DHTLIB_ERROR_CHECKSUM = -1
     DHTLIB_ERROR_TIMEOUT = -2
@@ -20,7 +20,7 @@ class DHT(object):
         self.bits = [0, 0, 0, 0, 0]
 
     # Read DHT sensor, store the original data in bits[]
-    def readSensor(self, pin, wakeupDelay):
+    def read_sensor(self, pin, wakeupDelay):
         mask = 0x80
         idx = 0
         self.bits = [0, 0, 0, 0, 0]
@@ -66,8 +66,8 @@ class DHT(object):
         return self.DHTLIB_OK
 
     # Read DHT sensor, analyze the data of temperature and humidity
-    def readDHT11(self):
-        rv = self.readSensor(self.pin, self.DHTLIB_DHT11_WAKEUP)
+    def read_DHT11(self):
+        rv = self.read_sensor(self.pin, self.DHTLIB_DHT11_WAKEUP)
         if rv is not self.DHTLIB_OK:
             self.humidity = self.DHTLIB_INVALID_VALUE
             self.temperature = self.DHTLIB_INVALID_VALUE
@@ -80,7 +80,7 @@ class DHT(object):
         return self.DHTLIB_OK
 
 
-def parseCheckCode(code):
+def parse_check_code(code):
     if code == 0:
         return "DHTLIB_OK"
     elif code == -1:
@@ -94,7 +94,7 @@ def parseCheckCode(code):
 def run_dht_loop(dht, delay, callback, stop_event):
     while True:
         check = dht.readDHT11()
-        code = parseCheckCode(check)
+        code = parse_check_code(check)
         humidity, temperature = dht.humidity, dht.temperature
         callback(humidity, temperature, code)
         if stop_event.is_set():

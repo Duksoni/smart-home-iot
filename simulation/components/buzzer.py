@@ -33,6 +33,8 @@ def _get_buzzer(settings):
 
 def buzzer_control(settings, command):
     cmd = (command or "").lower()
+    short_duration = settings.get("short_duration", 0.1)
+    long_duration = settings.get("long_duration", 0.5)
 
     if cmd == "beep":
         cmd = "short"
@@ -55,9 +57,9 @@ def buzzer_control(settings, command):
     else:
         buzzer = _get_buzzer(settings)
         if cmd == "short":
-            buzzer.short_beep()
+            buzzer.short_beep(duration=short_duration)
         elif cmd == "long":
-            buzzer.long_beep()
+            buzzer.long_beep(duration=long_duration)
         elif cmd == "start":
             buzzer.start()
         elif cmd == "stop":

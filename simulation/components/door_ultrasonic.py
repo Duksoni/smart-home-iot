@@ -1,5 +1,6 @@
 import time
 import threading
+from door_coordinator import update_distance
 from mqtt_publisher import build_topic, get_base_topic, get_device_name, get_publisher
 
 from simulators.door_ultrasonic import run_dus_simulator
@@ -14,6 +15,7 @@ def dus1_callback(distance, code, simulated):
     else:
         print(f"Distance: {distance} cm")
 
+    update_distance(code, distance)
     publisher = get_publisher()
     if publisher:
         payload = {
@@ -28,15 +30,26 @@ def dus1_callback(distance, code, simulated):
 
 def run_dus1(settings, threads, stop_event, code):
     simulated = settings.get("simulated", True)
+    interval = settings.get("interval", 5)
 
     def callback(state, code_value):
         dus1_callback(state, code_value, simulated)
 
     if settings.get("simulated"):
         print(f"Starting simulated {code}")
+        sim_cfg = settings.get("simulator", {})
         thread = threading.Thread(
             target=run_dus_simulator,
-            args=(5, callback, stop_event, code),
+            args=(
+                interval,
+                callback,
+                stop_event,
+                code,
+                sim_cfg.get("initial_distance", 100),
+                sim_cfg.get("min_distance", 2),
+                sim_cfg.get("max_distance", 400),
+                sim_cfg.get("step", 5),
+            ),
             name=f"simulator-{code.lower()}",
             daemon=True
         )
@@ -50,7 +63,7 @@ def run_dus1(settings, threads, stop_event, code):
         dus1 = DUS(trigger_pin, echo_pin)
         thread = threading.Thread(
             target=run_dus_loop,
-            args=(dus1, 5, callback, stop_event, code),
+            args=(dus1, interval, callback, stop_event, code),
             name=f"sensor-{code.lower()}",
             daemon=True
         )

@@ -46,9 +46,19 @@ def run_dht(settings, threads, stop_event, code):
 
     if settings.get("simulated", True):
         print(f"Starting simulated {sensor_code}")
+        interval = settings.get("interval", 2)
+        sim_cfg = settings.get("simulator", {})
         thread = threading.Thread(
             target=run_dht_simulator,
-            args=(2, callback, stop_event, "DHTLIB_OK"),
+            args=(
+                interval,
+                callback,
+                stop_event,
+                "DHTLIB_OK",
+                sim_cfg.get("initial_temp", 25),
+                sim_cfg.get("initial_humidity", 20),
+                sim_cfg.get("step", 1),
+            ),
             name=f"simulator-{sensor_code.lower()}",
             daemon=True,
         )
@@ -59,9 +69,10 @@ def run_dht(settings, threads, stop_event, code):
 
         print(f"Starting real {sensor_code} loop")
         dht = DHT(settings["pin"])
+        interval = settings.get("interval", 2)
         thread = threading.Thread(
             target=run_dht_loop,
-            args=(dht, 2, callback, stop_event),
+            args=(dht, interval, callback, stop_event),
             name=f"sensor-{sensor_code.lower()}",
             daemon=True,
         )

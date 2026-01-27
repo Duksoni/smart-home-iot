@@ -1,5 +1,6 @@
 import time
 import threading
+from door_coordinator import update_door
 from mqtt_publisher import build_topic, get_base_topic, get_device_name, get_publisher
 from simulators.door_button import run_door_sensor_simulator
 
@@ -10,6 +11,7 @@ def ds1_callback(state, code, simulated):
     print(f"Timestamp: {time.strftime('%H:%M:%S', t)}")
     print(f"Code: {code}")
     print(f"Door state: {state_str}")
+    update_door(code, state)
     publisher = get_publisher()
     if publisher:
         payload = {
@@ -25,15 +27,26 @@ def ds1_callback(state, code, simulated):
 
 def run_ds1(settings, threads, stop_event, code):
     simulated = settings.get("simulated", True)
+    interval = settings.get("interval", 5)
 
     def callback(state, code_value):
         ds1_callback(state, code_value, simulated)
 
     if settings.get("simulated"):
         print(f"Starting simulated {code}")
+        sim_cfg = settings.get("simulator", {})
+        toggle_probability = sim_cfg.get("toggle_probability", 0.3)
+        initial_state = sim_cfg.get("initial_state", 0)
         thread = threading.Thread(
             target=run_door_sensor_simulator,
-            args=(5, callback, stop_event, code),
+            args=(
+                interval,
+                callback,
+                stop_event,
+                code,
+                toggle_probability,
+                initial_state,
+            ),
             name=f"simulator-{code.lower()}",
             daemon=True
         )
@@ -46,7 +59,7 @@ def run_ds1(settings, threads, stop_event, code):
         ds1 = DS(pin)
         thread = threading.Thread(
             target=run_ds_loop,
-            args=(ds1, 5, callback, stop_event, code),
+            args=(ds1, interval, callback, stop_event, code),
             name=f"sensor-{code.lower()}",
             daemon=True
         )

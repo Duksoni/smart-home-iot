@@ -1,6 +1,7 @@
 import threading
 import time
 
+from door_coordinator import update_attempt, update_key
 from mqtt_publisher import build_topic, get_base_topic, get_device_name, get_publisher
 from simulators.membrane_switch import run_membrane_switch_simulator
 
@@ -31,6 +32,7 @@ def send_key(settings, key):
         return
     _current_attempt.append(key)
     code = settings.get("code", "DMS")
+    update_key(code, key)
 
     if settings.get("simulated"):
         print(f"[SIM] DMS -> Key accepted: {key}")
@@ -57,6 +59,7 @@ def send_key(settings, key):
     attempt = consume_current()
     success = attempt == _password
     print("Password accepted!" if success else "Wrong password! Try again.")
+    update_attempt(code, success)
     if publisher:
         attempt_payload = {
             "measurement": "membrane_attempt",
@@ -70,10 +73,12 @@ def send_key(settings, key):
 
 
 def run_membrane_switch(settings, threads, stop_event, code):
+    if settings.get("password"):
+        set_password(settings["password"])
     if settings.get("simulated"):
         print("Control DMS via console or by running it on auto loop")
     else:
-        print("Starting DMS loop (GPIO support coming soon)")
+        print("Starting DMS loop on GPIO")
         thread = threading.Thread(
             target=run_membrane_switch_gpio_loop,
             args=(settings, stop_event, code),
@@ -84,11 +89,33 @@ def run_membrane_switch(settings, threads, stop_event, code):
         thread.start()
 
 
-def run_membrane_switch_gpio_loop(settings, stop_event, code, delay=5):
-    pin = settings.get("pin")
-    print(f"[GPIO] {code} -> Listening on pin {pin} (not implemented yet)")
-    while not stop_event.is_set():
-        time.sleep(delay)
+def run_membrane_switch_gpio_loop(settings, stop_event, code, delay=0.1):
+    from sensors.door_membrane_switch import DMS, run_dms_loop
+
+    row_pins = settings.get("row_pins") or settings.get("rows")
+    col_pins = settings.get("col_pins") or settings.get("cols")
+    keymap = settings.get("keymap")
+    debounce = settings.get("debounce", 0.15)
+    settle = settings.get("settle", 0.001)
+    interval = settings.get("interval", delay)
+
+    if row_pins and col_pins:
+        print(f"[GPIO] {code} -> Rows: {row_pins} Cols: {col_pins}")
+    else:
+        print(f"[GPIO] {code} -> Using default keypad pinout")
+
+    dms = DMS(
+        row_pins=row_pins,
+        col_pins=col_pins,
+        keymap=keymap,
+        debounce=debounce,
+        settle=settle,
+    )
+
+    def callback(key, _code):
+        send_key(settings, key)
+
+    run_dms_loop(dms, interval, callback, stop_event, code)
 
 
 def _auto_worker(delay, settings, stop_event):
@@ -102,9 +129,10 @@ def start_auto(settings, threads=None, delay=2):
         return
 
     _auto_stop_event = threading.Event()
+    auto_delay = settings.get("auto_delay", delay)
     _auto_thread = threading.Thread(
         target=_auto_worker,
-        args=(delay, settings, _auto_stop_event),
+        args=(auto_delay, settings, _auto_stop_event),
         name="simulator-dms-auto",
         daemon=True,
     )
@@ -141,4 +169,4 @@ def send_sequence(settings, sequence):
 
     for ch in seq:
         send_key(settings, ch)
-        time.sleep(0.15)
+        time.sleep(settings.get("key_delay", 0.15))

@@ -1,6 +1,7 @@
 import threading
 import time
 
+from door_coordinator import update_motion
 from mqtt_publisher import build_topic, get_base_topic, get_device_name, get_publisher
 from simulators.motion import run_dpir_simulator
 
@@ -12,6 +13,7 @@ def dpir_callback(state, code, simulated):
     print(f"Timestamp: {time.strftime('%H:%M:%S', t)}")
     print(f"Code: {code}")
     print(f"Motion state: {state_str}")
+    update_motion(code, state)
     publisher = get_publisher()
     if publisher:
         payload = {
@@ -34,9 +36,20 @@ def run_dpir(settings, threads, stop_event, code):
 
     if settings.get("simulated"):
         print(f"Starting simulated {code}")
+        interval = settings.get("interval", 3)
+        sim_cfg = settings.get("simulator", {})
+        quiet_range = sim_cfg.get("quiet_range") or (3, 10)
+        burst_range = sim_cfg.get("burst_range") or (2, 6)
         thread = threading.Thread(
             target=run_dpir_simulator,
-            args=(3, callback, stop_event, code),
+            args=(
+                interval,
+                callback,
+                stop_event,
+                code,
+                quiet_range,
+                burst_range,
+            ),
             name=f"simulator-{code.lower()}",
             daemon=True,
         )
@@ -51,7 +64,7 @@ def run_dpir(settings, threads, stop_event, code):
 
         def loop():
             last_state = None
-            delay = 1.0  # sampling interval (seconds)
+            delay = settings.get("interval", 1.0)  # sampling interval (seconds)
             while not stop_event.is_set():
                 state = dpir.read()
                 if state != last_state:
