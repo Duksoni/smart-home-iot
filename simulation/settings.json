@@ -41,32 +41,71 @@
     "hardware": {
         "DHT1": {
             "pin": 17,
-            "simulated": true
+            "simulated": true,
+            "interval": 2,
+            "simulator": {
+                "initial_temp": 25,
+                "initial_humidity": 20,
+                "step": 1
+            }
         },
         "DS1": {
             "pin": 22,
-            "simulated": true
+            "simulated": true,
+            "interval": 5,
+            "simulator": {
+                "toggle_probability": 0.3,
+                "initial_state": 0
+            }
         },
         "DUS1": {
             "trigger_pin": 23,
             "echo_pin": 24,
-            "simulated": true
+            "simulated": true,
+            "interval": 5,
+            "simulator": {
+                "initial_distance": 100,
+                "min_distance": 2,
+                "max_distance": 400,
+                "step": 5
+            }
         },
         "DL": {
             "pin": 25,
-            "simulated": true
+            "simulated": true,
+            "active_high": true
         },
         "DB": {
             "pin": 12,
-            "simulated": true
+            "simulated": true,
+            "active_high": true,
+            "pwm": false,
+            "frequency": 2000,
+            "duty_cycle": 50,
+            "short_duration": 0.1,
+            "long_duration": 0.5
         },
         "DPIR1": {
             "pin": 27,
-            "simulated": true
+            "simulated": true,
+            "interval": 3,
+            "simulator": {
+                "quiet_range": [
+                    3,
+                    10
+                ],
+                "burst_range": [
+                    2,
+                    6
+                ]
+            }
         },
         "DMS": {
             "pin": 5,
-            "simulated": true
+            "simulated": true,
+            "password": "5279",
+            "auto_delay": 2,
+            "key_delay": 0.15
         },
         "WEBC": {
 
@@ -78,5 +117,29 @@
         "base_topic": "smarthome",
         "batch_size": 10,
         "flush_interval": 2.0
+    },
+    "door_logic": {
+        "enabled": true,
+        "codes": {
+            "ds": "DS1",
+            "dpir": "DPIR1",
+            "dus": "DUS1",
+            "dms": "DMS",
+            "dl": "DL",
+            "db": "DB"
+        },
+        "presence_distance_cm": 70,
+        "distance_stale_seconds": 5,
+        "presence_light_seconds": 10,
+        "unlock_light_seconds": 8,
+        "door_open_alert_seconds": 15,
+        "door_open_beep_interval": 5,
+        "door_open_blink_interval": 0.5,
+        "failure_beep_pause_seconds": 0.15,
+        "coordinator_interval": 0.2,
+        "key_beep": "short",
+        "success_beep": "long",
+        "failure_beep": "double_short",
+        "door_open_beep": "short"
     }
 }
