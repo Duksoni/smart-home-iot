@@ -44,8 +44,11 @@ class DoorState:
         if not self._matches("ds", code):
             return
         now = time.monotonic()
+        new_state = bool(is_open)
         with self._lock:
-            self.door_open = bool(is_open)
+            if new_state == self.door_open:
+                return
+            self.door_open = new_state
             self.door_at = now
 
     def update_key(self, code, key):
@@ -190,6 +193,7 @@ def _coordinator_loop(state, config, hardware_config, codes, stop_event):
         if presence:
             light_until = max(light_until, now + presence_light)
 
+        # TODO ne treba
         door_open = bool(snapshot["door_open"])
         open_duration = now - snapshot["door_at"] if door_open else 0.0
         open_alert = door_open and open_duration >= door_open_alert
