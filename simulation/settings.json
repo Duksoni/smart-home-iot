@@ -101,7 +101,18 @@
             }
         },
         "DMS": {
-            "pin": 5,
+            "row_pins": [
+                5,
+                6,
+                13,
+                19
+            ],
+            "col_pins": [
+                16,
+                20,
+                21,
+                26
+            ],
             "simulated": true,
             "password": "5279",
             "auto_delay": 2,
