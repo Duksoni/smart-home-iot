@@ -8,6 +8,7 @@ class DPIR:
     def __init__(self, pin):
         self.pin = pin
         if GPIO:
+            GPIO.setmode(GPIO.BCM)
             GPIO.setup(pin, GPIO.IN)
 
     def read(self):

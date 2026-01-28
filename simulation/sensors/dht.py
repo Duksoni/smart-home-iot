@@ -18,6 +18,7 @@ class DHT:
     def __init__(self, pin):
         self.pin = pin
         self.bits = [0, 0, 0, 0, 0]
+        GPIO.setmode(GPIO.BCM)
 
     # Read DHT sensor, store the original data in bits[]
     def read_sensor(self, pin, wakeupDelay):

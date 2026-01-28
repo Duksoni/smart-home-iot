@@ -6,6 +6,7 @@ class DUS:
         self.trig = trig_pin
         self.echo = echo_pin
 
+        GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.trig, GPIO.OUT)
         GPIO.setup(self.echo, GPIO.IN)
 
