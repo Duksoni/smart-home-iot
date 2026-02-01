@@ -1,10 +1,10 @@
 import threading
 import time
 
-from components.buzzer import buzzer_control
+from components.buzzer import buzzer_control, cleanup_all as cleanup_buzzers
 from components.door_button import run_ds1
 from components.door_ultrasonic import run_dus1
-from components.led import led_control
+from components.led import led_control, cleanup_all as cleanup_leds
 from components.membrane_switch import run_membrane_switch, send_sequence, start_auto, stop_auto
 from components.motion import run_dpir
 from door_coordinator import start_door_coordinator
@@ -123,3 +123,6 @@ def run(settings):
     stop_event.set()
     for thread in threads:
         thread.join(timeout=1)
+
+    cleanup_buzzers()
+    cleanup_leds()

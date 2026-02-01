@@ -68,3 +68,11 @@ def led_control(settings, command):
             }
             topic = build_topic(get_base_topic(), "actuators", code)
             publisher.enqueue_json(topic, payload)
+
+def cleanup_all():
+    for led in _LEDS.values():
+        try:
+            led.cleanup()
+        except Exception:
+            pass
+    _LEDS.clear()

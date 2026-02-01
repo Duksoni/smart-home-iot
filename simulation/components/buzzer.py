@@ -81,3 +81,11 @@ def buzzer_control(settings, command):
             }
             topic = build_topic(get_base_topic(), "actuators", code)
             publisher.enqueue_json(topic, payload)
+
+def cleanup_all():
+    for buzzer in _BUZZERS.values():
+        try:
+            buzzer.cleanup()
+        except Exception:
+            pass
+    _BUZZERS.clear()

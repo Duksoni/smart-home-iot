@@ -144,74 +144,37 @@ def _coordinator_loop(state, config, hardware_config, codes, stop_event):
     if codes.get("db"):
         buzzer_settings.setdefault("code", codes.get("db"))
 
-    light_until = 0.0
     led_on = False
-    blink_on = False
-    last_blink = 0.0
     last_key_at = 0.0
     last_attempt_at = 0.0
-    last_open_beep = 0.0
 
     interval = config.get("coordinator_interval", 0.2)
-    presence_distance = config.get("presence_distance_cm", 70)
-    distance_stale = config.get("distance_stale_seconds", 5)
-    presence_light = config.get("presence_light_seconds", 10)
-    unlock_light = config.get("unlock_light_seconds", 8)
-    door_open_alert = config.get("door_open_alert_seconds", 15)
-    door_open_beep_interval = config.get("door_open_beep_interval", 5)
-    door_open_blink_interval = config.get("door_open_blink_interval", 0.5)
+
     key_beep = config.get("key_beep", "short")
     success_beep = config.get("success_beep", "long")
     failure_beep = config.get("failure_beep", "double_short")
-    door_open_beep = config.get("door_open_beep", "short")
 
     while not stop_event.is_set():
-        now = time.monotonic()
         snapshot = state.snapshot()
 
+        # key press beep
         if snapshot["key_at"] > last_key_at:
             _enqueue_buzzer(key_beep)
             last_key_at = snapshot["key_at"]
 
+        # password attempt result
         if snapshot["attempt_at"] > last_attempt_at:
             if snapshot["attempt_success"]:
                 _enqueue_buzzer(success_beep)
-                light_until = max(light_until, now + unlock_light)
             else:
                 _enqueue_buzzer(failure_beep)
             last_attempt_at = snapshot["attempt_at"]
 
-        distance_fresh = (
-            snapshot["distance_cm"] is not None
-            and (now - snapshot["distance_at"]) <= distance_stale
-        )
-        presence = (
-            snapshot["motion_state"] == 1
-            and distance_fresh
-            and snapshot["distance_cm"] <= presence_distance
-        )
-        if presence:
-            light_until = max(light_until, now + presence_light)
-
-        # TODO ne treba
         door_open = bool(snapshot["door_open"])
-        open_duration = now - snapshot["door_at"] if door_open else 0.0
-        open_alert = door_open and open_duration >= door_open_alert
 
-        if open_alert and now - last_open_beep >= door_open_beep_interval:
-            _enqueue_buzzer(door_open_beep)
-            last_open_beep = now
-
-        desired_on = door_open or now < light_until
-        if open_alert:
-            if now - last_blink >= door_open_blink_interval:
-                blink_on = not blink_on
-                last_blink = now
-            desired_on = blink_on
-
-        if desired_on != led_on:
-            led_control(led_settings, "on" if desired_on else "off")
-            led_on = desired_on
+        if door_open != led_on:
+            led_control(led_settings, "on" if door_open else "off")
+            led_on = door_open
 
         time.sleep(interval)
 
