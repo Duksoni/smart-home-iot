@@ -55,8 +55,9 @@ def run_ds1(settings, threads, stop_event, code):
     else:
         from sensors.door_button import run_ds_loop, DS
         pin = settings.get("pin")
+        debounce = settings.get("debounce_ms", 100)
         print(f"Starting real {code} loop on pin {pin}")
-        ds1 = DS(pin)
+        ds1 = DS(pin, debounce)
         thread = threading.Thread(
             target=run_ds_loop,
             args=(ds1, interval, callback, stop_event, code),

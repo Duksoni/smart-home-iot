@@ -52,7 +52,8 @@
         "DS1": {
             "pin": 22,
             "simulated": true,
-            "interval": 5,
+            "interval": 10,
+            "debounce_ms": 100,
             "simulator": {
                 "toggle_probability": 0.3,
                 "initial_state": 0
