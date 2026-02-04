@@ -7,7 +7,6 @@
                 "DUS1",
                 "DPIR1",
                 "DMS",
-                "DHT1",
                 "WEBC"
             ],
             "actuators": [
@@ -52,7 +51,7 @@
         "DS1": {
             "pin": 22,
             "simulated": true,
-            "interval": 10,
+            "interval": 1,
             "debounce_ms": 100,
             "simulator": {
                 "toggle_probability": 0.3,
@@ -65,9 +64,9 @@
             "simulated": true,
             "interval": 5,
             "simulator": {
-                "initial_distance": 100,
-                "min_distance": 2,
-                "max_distance": 400,
+                "initial_distance": 0.0,
+                "min_distance": 2.0,
+                "max_distance": 120.0,
                 "step": 5
             }
         },

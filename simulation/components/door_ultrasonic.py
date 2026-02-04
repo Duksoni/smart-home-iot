@@ -45,10 +45,9 @@ def run_dus1(settings, threads, stop_event, code):
                 callback,
                 stop_event,
                 code,
-                sim_cfg.get("initial_distance", 100),
-                sim_cfg.get("min_distance", 2),
-                sim_cfg.get("max_distance", 400),
-                sim_cfg.get("step", 5),
+                sim_cfg.get("initial_distance", 0.0),
+                sim_cfg.get("min_distance", 2.0),
+                sim_cfg.get("max_distance", 120.0)
             ),
             name=f"simulator-{code.lower()}",
             daemon=True
