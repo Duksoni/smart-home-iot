@@ -1,1 +1,29 @@
 <h1 class="page-title">Dashboard</h1>
+<div class="toggle-wrapper">
+    <mat-button-toggle-group
+        [(ngModel)]="selectedDashboardId"
+    >
+        @for (device of dashboards; track device.id) {
+            <mat-button-toggle
+                [value]="device.id"
+            >
+                {{ device.id }}
+            </mat-button-toggle>
+        }
+    </mat-button-toggle-group>
+</div>
+
+<div class="dashboard-grid">
+    @for (device of dashboards; track device.id) {
+        <div
+            class="dashboard-frame"
+            [class.active]="device.id === selectedDashboardId"
+        >
+            <iframe
+                [src]="device.url"
+                [title]="device.id"
+                loading="lazy"
+            ></iframe>
+        </div>
+    }
+</div>
