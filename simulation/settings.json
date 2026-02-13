@@ -6,8 +6,7 @@
                 "DS1",
                 "DUS1",
                 "DPIR1",
-                "DMS",
-                "WEBC"
+                "DMS"
             ],
             "actuators": [
                 "DL",
@@ -21,13 +20,14 @@
                 "DPIR2",
                 "4SD",
                 "BTN",
-                "DHT3"
+                "DHT3",
+                "GSG"
             ],
             "actuators": []
         },
         "PI3": {
             "sensors": [
-                "GSG",
+                "DHT1",
                 "DHT2",
                 "IR",
                 "BRGB",
@@ -38,16 +38,6 @@
         }
     },
     "hardware": {
-        "DHT1": {
-            "pin": 17,
-            "simulated": true,
-            "interval": 2,
-            "simulator": {
-                "initial_temp": 25,
-                "initial_humidity": 20,
-                "step": 1
-            }
-        },
         "DS1": {
             "pin": 22,
             "simulated": true,
@@ -118,8 +108,110 @@
             "auto_delay": 2,
             "key_delay": 0.15
         },
-        "WEBC": {
 
+        "DS2": {
+            "pin": 22,
+            "simulated": true,
+            "interval": 1,
+            "debounce_ms": 100,
+            "simulator": {
+                "toggle_probability": 0.3,
+                "initial_state": 0
+            }
+        },
+        "DUS2": {
+            "trigger_pin": 23,
+            "echo_pin": 24,
+            "simulated": true,
+            "interval": 5,
+            "simulator": {
+                "initial_distance": 0.0,
+                "min_distance": 2.0,
+                "max_distance": 120.0,
+                "step": 5
+            }
+        },
+        "DPIR2": {
+            "pin": 27,
+            "simulated": true,
+            "interval": 3,
+            "simulator": {
+                "quiet_range": [
+                    3,
+                    10
+                ],
+                "burst_range": [
+                    2,
+                    6
+                ]
+            }
+        },
+        "BTN": {
+            "pin": 24,
+            "simulated": true,
+            "interval": 1,
+            "debounce_ms": 100,
+            "simulator": {
+                "toggle_probability": 0.3,
+                "initial_state": 0
+            }
+        },
+        "DHT3": {
+            "pin": 17,
+            "simulated": true,
+            "interval": 2,
+            "simulator": {
+                "initial_temp": 25,
+                "initial_humidity": 20,
+                "step": 1
+            }
+        },
+        "GSG": {
+        },
+
+        "DHT1": {
+            "pin": 17,
+            "simulated": true,
+            "interval": 2,
+            "simulator": {
+                "initial_temp": 25,
+                "initial_humidity": 20,
+                "step": 1
+            }
+        },
+        "DHT2": {
+            "pin": 18,
+            "simulated": true,
+            "interval": 2,
+            "simulator": {
+                "initial_temp": 25,
+                "initial_humidity": 20,
+                "step": 1
+            }
+        },
+        "IR": {
+
+        },
+        "BRGB": {
+
+        },
+        "LCD": {
+
+        },
+        "DPIR3": {
+            "pin": 27,
+            "simulated": true,
+            "interval": 3,
+            "simulator": {
+                "quiet_range": [
+                    3,
+                    10
+                ],
+                "burst_range": [
+                    2,
+                    6
+                ]
+            }
         }
     },
     "mqtt": {
