@@ -1,0 +1,19 @@
+<mat-toolbar>
+    <div class="brand-area">
+        <span class="brand">Smart Home IoT</span>
+        <span class="clock">{{clock() | date: 'HH:mm:ss'}}</span>
+    </div>
+    <span class="spacer"></span>
+    <nav>
+        @for (link of navLinks; track link) {
+            <a
+                mat-button
+                [routerLink]="link.path"
+                routerLinkActive="active-link"
+                [routerLinkActiveOptions]="{exact: true}"
+            >
+                {{link.label}}
+            </a>
+        }
+    </nav>
+</mat-toolbar>

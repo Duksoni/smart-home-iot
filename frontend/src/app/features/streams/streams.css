@@ -1,0 +1,56 @@
+.streams-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 800px));
+    gap: 1.5rem;
+    justify-content: center;
+}
+
+.stream-card {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.stream-card h3 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.camera-stream,
+.no-signal {
+    width: 100%;
+    max-width: 800px;
+    min-height: 600px;
+}
+
+.camera-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.camera-stream {
+    width: 100%;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+.camera-stream,
+.no-signal {
+    width: 100%;
+    max-width: 800px;
+    min-height: 600px;
+}
+
+.no-signal {
+    border-radius: 8px;
+    background: black;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 300px;
+    font-size: 2rem;
+}
