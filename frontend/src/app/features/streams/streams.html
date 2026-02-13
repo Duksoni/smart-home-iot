@@ -3,7 +3,7 @@
 </section>
 
 <div class="streams-grid">
-    @for (stream of streams; track stream) {
+    @for (stream of streams; track stream.id) {
         <article class="stream-card">
             <h3>{{ stream.label }}</h3>
             <div class="camera-wrapper">
