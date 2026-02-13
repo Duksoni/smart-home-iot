@@ -39,11 +39,13 @@ services:
       - '3005:3000'
     volumes:
       - grafana:/var/lib/grafana
+      - ./grafana-config/custom.ini:/etc/grafana/custom.ini:ro
     depends_on:
       - influxdb
     environment:
       - GF_SECURITY_ADMIN_USER=${GRAFANA_USERNAME}
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_PATHS_CONFIG=/etc/grafana/custom.ini
     networks:
       - home-iot-network
 
