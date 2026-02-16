@@ -1,7 +1,7 @@
 import threading
 import time
 
-from mqtt_publisher import build_topic, get_base_topic, get_device_name, get_publisher
+from mqtt_publisher import get_publisher
 from simulators.dht import run_dht_simulator
 
 
@@ -18,10 +18,10 @@ def dht_callback(humidity, temperature, status, dht_settings, code, verbose=Fals
     if not publisher:
         return
 
-    topic = build_topic(get_base_topic(), "sensors", code)
+    topic = publisher.build_topic("sensors", code)
     base_payload = {
         "simulated": dht_settings.get("simulated", True),
-        "device": get_device_name(),
+        "device": publisher.device_name,
         "code": code,
     }
     temp_payload = {

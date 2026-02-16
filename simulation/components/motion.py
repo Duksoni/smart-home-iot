@@ -2,7 +2,7 @@ import threading
 import time
 
 from door_coordinator import update_motion
-from mqtt_publisher import build_topic, get_base_topic, get_device_name, get_publisher
+from mqtt_publisher import get_publisher
 from simulators.motion import run_dpir_simulator
 
 
@@ -20,11 +20,11 @@ def dpir_callback(state, code, simulated):
             "measurement": "motion",
             "value": state,
             "simulated": simulated,
-            "device": get_device_name(),
+            "device": publisher.device_name,
             "code": code,
             "state": state_str,
         }
-        topic = build_topic(get_base_topic(), "sensors", code)
+        topic = publisher.build_topic("sensors", code)
         publisher.enqueue_json(topic, payload)
 
 

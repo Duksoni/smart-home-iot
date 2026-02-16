@@ -1,4 +1,4 @@
-from mqtt_publisher import build_topic, get_base_topic, get_device_name, get_publisher
+from mqtt_publisher import get_publisher
 
 ACTION_VALUES = {
     "on": 1,
@@ -36,13 +36,13 @@ def led_control(settings, command):
 
     if settings.get("simulated"):
         if cmd == "on":
-            print(f"[SIM] LED -> on")
+            print("[SIM] LED -> on")
         elif cmd == "off":
-            print(f"[SIM] LED -> off")
+            print("[SIM] LED -> off")
         elif cmd == "toggle":
-            print(f"[SIM] LED -> toggle")
+            print("[SIM] LED -> toggle")
         else:
-            print(f"[SIM] LED -> unknown command: {command}")
+            print("[SIM] LED -> unknown command: {command}")
     else:
         led = _get_led(settings)
         if cmd == "on":
@@ -63,10 +63,10 @@ def led_control(settings, command):
                 "value": ACTION_VALUES[cmd],
                 "action": cmd,
                 "simulated": settings.get("simulated", True),
-                "device": get_device_name(),
+                "device": publisher.device_name,
                 "code": code
             }
-            topic = build_topic(get_base_topic(), "actuators", code)
+            topic = publisher.build_topic("actuators", code)
             publisher.enqueue_json(topic, payload)
 
 def cleanup_all():

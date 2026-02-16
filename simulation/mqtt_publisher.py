@@ -2,35 +2,31 @@ import json
 import queue
 import threading
 import time
+from typing import Optional
 
 import paho.mqtt.publish as publish
 
 
-DEFAULT_BASE_TOPIC = "smarthome"
-DEFAULT_BATCH_SIZE = 10
-DEFAULT_FLUSH_INTERVAL = 2.0
-HOSTNAME = "localhost"
-PORT = 1883
-
-_publisher = None
-_base_topic = DEFAULT_BASE_TOPIC
-_device_name = "unknown"
-
-
 class MqttBatchPublisher:
-    def __init__(self, host, port, batch_size=DEFAULT_BATCH_SIZE, flush_interval=DEFAULT_FLUSH_INTERVAL):
-        self.host = host
-        self.port = port
-        self.batch_size = batch_size
-        self.flush_interval = flush_interval
+    def __init__(self, settings):
+        self.host = settings.get("host")
+        self.port = settings.get("port")
+        self.base_topic = settings.get("publish_base_topic")
+        self.batch_size = settings.get("publish_batch_size")
+        self.flush_interval = settings.get("publish_flush_interval")
+        self.device_name = settings.get("device")
         self._queue = queue.Queue()
         self._stop_event = threading.Event()
         self._thread = threading.Thread(
             target=self._worker,
-            name="mqtt-batcher",
+            name="mqtt-publisher",
             daemon=True,
         )
         self._thread.start()
+
+    def build_topic(self, category, code):
+        base = self.base_topic.rstrip("/")
+        return f"{base}/{category}/{code}"
 
     def enqueue_json(self, topic, payload, qos=0, retain=False):
         self._queue.put((topic, json.dumps(payload), qos, retain))
@@ -64,31 +60,17 @@ class MqttBatchPublisher:
                 last_flush = time.monotonic()
 
 
-def init_mqtt(settings):
-    global _publisher, _base_topic, _device_name
-    mqtt_settings = settings.get("mqtt", {})
-    host = mqtt_settings.get("host", HOSTNAME)
-    port = mqtt_settings.get("port", PORT)
-    _base_topic = mqtt_settings.get("base_topic", DEFAULT_BASE_TOPIC)
-    batch_size = mqtt_settings.get("batch_size", DEFAULT_BATCH_SIZE)
-    flush_interval = mqtt_settings.get("flush_interval", DEFAULT_FLUSH_INTERVAL)
-    _device_name = settings.get("device", "unknown")
-    _publisher = MqttBatchPublisher(host, port, batch_size=batch_size, flush_interval=flush_interval)
+_publisher: Optional["MqttBatchPublisher"] = None
+
+
+def init_mqtt_publisher(settings: dict):
+    global _publisher
+    mqtt_settings = settings.get("mqtt")
+    if not mqtt_settings:
+        raise ValueError("MQTT settings are not configured")
+    _publisher = MqttBatchPublisher(mqtt_settings)
     return _publisher
 
 
 def get_publisher():
     return _publisher
-
-
-def get_base_topic():
-    return _base_topic
-
-
-def get_device_name():
-    return _device_name
-
-
-def build_topic(base_topic, category, code):
-    base = (base_topic or DEFAULT_BASE_TOPIC).rstrip("/")
-    return f"{base}/{category}/{code}"

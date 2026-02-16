@@ -1,7 +1,7 @@
 import time
 import threading
 from door_coordinator import update_distance
-from mqtt_publisher import build_topic, get_base_topic, get_device_name, get_publisher
+from mqtt_publisher import get_publisher
 
 from simulators.door_ultrasonic import run_dus_simulator
 
@@ -22,10 +22,10 @@ def dus1_callback(distance, code, simulated):
             "measurement": "ultrasonic",
             "value": distance,
             "simulated": simulated,
-            "device": get_device_name(),
+            "device": publisher.device_name,
             "code": code,
         }
-        topic = build_topic(get_base_topic(), "sensors", code)
+        topic = publisher.build_topic( "sensors", code)
         publisher.enqueue_json(topic, payload)
 
 def run_dus1(settings, threads, stop_event, code):

@@ -1,13 +1,21 @@
 import threading
 import time
 
-from components.buzzer import buzzer_control, cleanup_all as cleanup_buzzers
+from components.buzzer import buzzer_control
+from components.buzzer import cleanup_all as cleanup_buzzers
 from components.door_button import run_ds1
 from components.door_ultrasonic import run_dus1
-from components.led import led_control, cleanup_all as cleanup_leds
-from components.membrane_switch import run_membrane_switch, send_sequence, start_auto, stop_auto
+from components.led import cleanup_all as cleanup_leds
+from components.led import led_control
+from components.membrane_switch import (
+    run_membrane_switch,
+    send_sequence,
+    start_auto,
+    stop_auto,
+)
 from components.motion import run_dpir
 from door_coordinator import start_door_coordinator
+from mqtt_publisher import init_mqtt_publisher
 from settings import get_device_config
 
 RUNNERS = {
@@ -102,6 +110,8 @@ def run(settings):
         if isinstance(params, dict):
             params.setdefault("code", code)
 
+    publisher = init_mqtt_publisher(settings)
+
     threads = []
     stop_event = threading.Event()
 
@@ -118,11 +128,19 @@ def run(settings):
         while not stop_event.is_set():
             time.sleep(0.5)
     except KeyboardInterrupt:
-        stop_event.set()
+        pass
 
+    publisher.stop()
     stop_event.set()
     for thread in threads:
         thread.join(timeout=1)
 
-    cleanup_buzzers()
-    cleanup_leds()
+    try:
+        import RPi.GPIO as GPIO
+        GPIO.cleanup()
+    except ImportError:
+        pass
+
+    # Check later if this is no longer needed
+    # cleanup_buzzers()
+    # cleanup_leds()

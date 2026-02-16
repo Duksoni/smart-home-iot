@@ -2,7 +2,7 @@ import threading
 import time
 
 from door_coordinator import update_attempt, update_key
-from mqtt_publisher import build_topic, get_base_topic, get_device_name, get_publisher
+from mqtt_publisher import get_publisher
 from simulators.membrane_switch import run_membrane_switch_simulator
 
 _valid_keys = [str(i) for i in range(10)] + ["#"]
@@ -47,10 +47,10 @@ def send_key(settings, key):
             "value": key_value,
             "key": key,
             "simulated": settings.get("simulated", True),
-            "device": get_device_name(),
+            "device": publisher.device_name,
             "code": code,
         }
-        key_topic = build_topic(get_base_topic(), "sensors", code)
+        key_topic = publisher.build_topic("sensors", code)
         publisher.enqueue_json(key_topic, key_payload)
 
     if key != "#":
@@ -65,10 +65,10 @@ def send_key(settings, key):
             "measurement": "membrane_attempt",
             "value": 1 if success else 0,
             "simulated": settings.get("simulated", True),
-            "device": get_device_name(),
+            "device": publisher.device_name,
             "code": code,
         }
-        attempt_topic = build_topic(get_base_topic(), "sensors", code)
+        attempt_topic = publisher.build_topic("sensors", code)
         publisher.enqueue_json(attempt_topic, attempt_payload)
 
 

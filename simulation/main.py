@@ -1,9 +1,7 @@
-from mqtt_publisher import init_mqtt
 from settings import load_settings
 
 if __name__ == "__main__":
     settings = load_settings()
-    init_mqtt(settings)
     device_name = settings.get("device", "PI1")
 
     if device_name == "PI1":
@@ -14,6 +12,8 @@ if __name__ == "__main__":
     elif device_name == "PI2":
         print("Starting PI2 controller")
     elif device_name == "PI3":
+        from devices.pi3 import run
         print("Starting PI3 controller")
+        run(settings)
     else:
         print(f"No device implementation for {device_name}")

@@ -55,7 +55,7 @@
             "simulated": true,
             "interval": 5,
             "simulator": {
-                "initial_distance": 0.0,
+                "initial_distance": 80.0,
                 "min_distance": 2.0,
                 "max_distance": 120.0,
                 "step": 5
@@ -222,9 +222,9 @@
     "mqtt": {
         "host": "localhost",
         "port": 1883,
-        "base_topic": "smarthome",
-        "batch_size": 10,
-        "flush_interval": 2.0
+        "publish_base_topic": "smarthome",
+        "publish_batch_size": 10,
+        "publish_flush_interval": 2.0
     },
     "door_logic": {
         "enabled": true,

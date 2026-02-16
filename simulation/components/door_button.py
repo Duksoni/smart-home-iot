@@ -1,7 +1,7 @@
 import time
 import threading
 from door_coordinator import update_door
-from mqtt_publisher import build_topic, get_base_topic, get_device_name, get_publisher
+from mqtt_publisher import get_publisher
 from simulators.door_button import run_door_sensor_simulator
 
 def ds1_callback(state, code, simulated):
@@ -18,11 +18,11 @@ def ds1_callback(state, code, simulated):
             "measurement": "button",
             "value": state,
             "simulated": simulated,
-            "device": get_device_name(),
+            "device": publisher.device_name,
             "code": code,
             "state": state_str,
         }
-        topic = build_topic(get_base_topic(), "sensors", code)
+        topic = publisher.build_topic( "sensors", code)
         publisher.enqueue_json(topic, payload)
 
 def run_ds1(settings, threads, stop_event, code):

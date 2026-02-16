@@ -1,11 +1,12 @@
+import math
 import random
 import time
 
 
-def generate_distance(initial_distance=0.0, min_distance=2.0, max_distance=120.0):
+def generate_distance(initial_distance=80.0, min_distance=2.0, max_distance=120.0, step = 5):
     distance = float(initial_distance)
     while True:
-        distance += random.uniform(min_distance, min_distance)
+        distance += float(random.randint(-step, step))
         if distance < min_distance:
             distance = min_distance
         if distance > max_distance:

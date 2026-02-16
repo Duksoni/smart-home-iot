@@ -1,4 +1,4 @@
-from mqtt_publisher import build_topic, get_base_topic, get_device_name, get_publisher
+from mqtt_publisher import get_publisher
 
 ACTION_VALUES = {
     "short": 1,
@@ -76,10 +76,10 @@ def buzzer_control(settings, command):
                 "value": ACTION_VALUES[cmd],
                 "action": cmd,
                 "simulated": settings.get("simulated", True),
-                "device": get_device_name(),
+                "device": publisher.device_name,
                 "code": code,
             }
-            topic = build_topic(get_base_topic(), "actuators", code)
+            topic = publisher.build_topic("actuators", code)
             publisher.enqueue_json(topic, payload)
 
 def cleanup_all():
