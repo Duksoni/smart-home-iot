@@ -51,7 +51,7 @@ def _console_thread(hardware_config, stop_event):
         except EOFError:
             print("Keyboard interrupt, exiting...")
             stop_event.set()
-            break
+            return
 
         if not cmd:
             continue
@@ -59,7 +59,7 @@ def _console_thread(hardware_config, stop_event):
         lower = cmd.lower()
         if lower in {"exit", "quit"}:
             stop_event.set()
-            break
+            return
         if lower == "help":
             print("=" * 20)
             print("Commands:")
