@@ -1,5 +1,5 @@
 {
-    "device": "PI1",
+    "device": "PI3",
     "device_map": {
         "PI1": {
             "sensors": [
@@ -192,7 +192,8 @@
         },
         "IR": {
             "pin": 17,
-            "simulated": true
+            "simulated": true,
+            "rgb_led_code": "BRGB"
         },
         "BRGB": {
             "red_pin": 5,
@@ -223,6 +224,7 @@
         "host": "localhost",
         "port": 1883,
         "publish_base_topic": "smarthome",
+        "command_base_topic": "smarthome/commands",
         "publish_batch_size": 10,
         "publish_flush_interval": 2.0
     },
