@@ -55,7 +55,7 @@ def led_control(settings, action):
     if publisher:
         code = settings.get("code", "BRGB")
         payload = {
-            "measurement": "rgb-led",
+            "measurement": "rgb_led",
             "value": action,
             "simulated": simulated,
             "device": publisher.device_name,

@@ -21,7 +21,7 @@ def send_key(settings, key):
     publisher = get_publisher()
     if publisher:
         key_payload = {
-            "measurement": "ir-receiver",
+            "measurement": "ir_receiver",
             "value": key,
             "simulated": simulated,
             "device": publisher.device_name,
@@ -35,7 +35,7 @@ def send_key(settings, key):
         rgb_led_code = settings.get("rgb_led_code")
         action_payload = {
             "action": action,
-            "source": "ir-receiver",
+            "source": "ir_receiver",
             "simulated": simulated,
             "device": publisher.device_name,
             "code": rgb_led_code, # Use the RGB LED's code here

@@ -25,12 +25,12 @@ def dht_callback(humidity, temperature, status, dht_settings, code, verbose=Fals
         "code": code,
     }
     temp_payload = {
-        "measurement": "Temperature",
+        "measurement": "temperature",
         "value": temperature,
         **base_payload,
     }
     humidity_payload = {
-        "measurement": "Humidity",
+        "measurement": "humidity",
         "value": humidity,
         **base_payload,
     }
