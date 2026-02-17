@@ -70,6 +70,16 @@ class IRReceiver:
         return hex(int(str(binary_value), 2))
 
 
+def run_ir_loop(ir: IRReceiver, callback, stop_event, code):
+    while True:
+        in_data = ir.convert_hex(ir.get_binary())
+        for button in range(len(buttons)):  # Runs through every value in list
+            if hex(buttons[button]) == in_data:  # Checks this against incoming
+                callback(button_names[button], code)
+        if stop_event.is_set():
+            break
+
+
 buttons = [
     0x300FF22DD,
     0x300FFC23D,
