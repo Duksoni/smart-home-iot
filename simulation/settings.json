@@ -105,7 +105,7 @@
                 26
             ],
             "simulated": true,
-            "password": "5279",
+            "pin_code": "5279",
             "auto_delay": 2,
             "key_delay": 0.15
         },

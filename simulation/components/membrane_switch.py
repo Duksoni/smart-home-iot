@@ -73,8 +73,8 @@ def send_key(settings, key):
 
 
 def run_membrane_switch(settings, threads, stop_event, code):
-    if settings.get("password"):
-        set_password(settings["password"])
+    if settings.get("pin_code"):
+        set_password(settings["pin_code"])
     if settings.get("simulated"):
         print("Control DMS via console or by running it on auto loop")
     else:
