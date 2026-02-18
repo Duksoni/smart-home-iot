@@ -202,6 +202,9 @@
             "simulated": true
         },
         "LCD": {
+            "readings_cycle_seconds": 5,
+            "dht_codes": ["DHT1", "DHT2", "DHT3"],
+            "measurement_codes": ["temperature", "humidity"],
             "simulated": true
         },
         "DPIR3": {
