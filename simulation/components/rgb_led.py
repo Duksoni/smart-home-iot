@@ -1,15 +1,15 @@
 from mqtt_publisher import get_publisher
 
-actions = [
-    "light_off",
-    "light_red",
-    "light_green",
-    "light_blue",
-    "light_cyan",
-    "light_magenta",
-    "light_yellow",
-    "light_white",
-]
+actions = {
+    "light_off": ("Turning off", "turn_off"),
+    "light_red": ("Switching to red", "red_light"),
+    "light_green": ("Switching to green", "green_light"),
+    "light_blue": ("Switching to blue", "blue_light"),
+    "light_cyan": ("Switching to cyan", "cyan_light"),
+    "light_magenta": ("Switching to magenta", "magenta_light"),
+    "light_yellow": ("Switching to yellow", "yellow_light"),
+    "light_white": ("Switching to white", "white_light"),
+}
 
 _LEDS = {}
 
@@ -39,17 +39,19 @@ def led_control(settings, action):
     simulated = settings.get("simulated")
     prefix = "[SIM]" if simulated else "[GPIO]"
 
-    if action not in actions:
+    if action not in actions.keys():
         print(f"{prefix} RGB LED -> Invalid action: {action}")
         return
 
     print(f"{prefix} RGB LED -> Action: {action}")
 
-    if simulated:
-        do_action(prefix, action)
-    else:
+    message, method_name = actions[action]
+    print(f"{prefix} RGB LED -> {message}")
+
+    if not simulated:
+        print(f"{prefix} RGB LED -> {method_name}()")
         led = _get_led(settings)
-        do_action(prefix, action, led)
+        getattr(led, method_name)()
 
     publisher = get_publisher()
     if publisher:
@@ -61,48 +63,5 @@ def led_control(settings, action):
             "device": publisher.device_name,
             "code": code,
         }
-        topic = publisher.build_topic( "actuators", code)
+        topic = publisher.build_topic("actuators", code)
         publisher.enqueue_json(topic, payload)
-
-
-def do_action(prefix, action, led=None):
-    match action:
-        case "light_off":
-            print(f"{prefix} RGB LED -> Turning off")
-            if led:
-                led.turn_off()
-
-        case "light_red":
-            print(f"{prefix} RGB LED -> Switching to red")
-            if led:
-                led.red_light()
-
-        case "light_green":
-            print(f"{prefix} RGB LED -> Switching to green")
-            if led:
-                led.green_light()
-
-        case "light_blue":
-            print(f"{prefix} RGB LED -> Switching to blue")
-            if led:
-                led.blue_light()
-
-        case "light_cyan":
-            print(f"{prefix} RGB LED -> Switching to cyan")
-            if led:
-                led.cyan_light()
-
-        case "light_magenta":
-            print(f"{prefix} RGB LED -> Switching to magenta")
-            if led:
-                led.magenta_light()
-
-        case "light_yellow":
-            print(f"{prefix} RGB LED -> Switching to yellow")
-            if led:
-                led.yellow_light()
-
-        case "light_white":
-            print(f"{prefix} RGB LED -> Switching to white")
-            if led:
-                led.white_light()
