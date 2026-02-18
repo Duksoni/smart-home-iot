@@ -11,7 +11,7 @@ class MqttBatchPublisher:
     def __init__(self, settings):
         self.host = settings.get("host")
         self.port = settings.get("port")
-        self.base_topic = settings.get("publish_base_topic")
+        self.base_topic = settings.get("base_topic")
         self.batch_size = settings.get("publish_batch_size")
         self.flush_interval = settings.get("publish_flush_interval")
         self.device_name = settings.get("device")

@@ -23,12 +23,13 @@ class BRGBCoordinator:
             print(f"Invalid MQTT payload: {exc}")
 
 
-def start_rgb_light_coordinator(broker_settings, hardware_settings):
+def start_rgb_light_coordinator(broker_settings: dict, hardware_settings: dict):
     code = "BRGB"
     client_id = "rgb-light-coordinator"
     coordinator = BRGBCoordinator(hardware_settings.get(code))
+    topic = f"{broker_settings.get('command_base_topic')}/{code}"
     subscriber = MqttSubscriber(
-        broker_settings, coordinator.on_message, code, client_id
+        broker_settings, coordinator.on_message, client_id, [topic]
     )
     subscriber.connect_and_start()
 
