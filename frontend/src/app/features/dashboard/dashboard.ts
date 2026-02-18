@@ -1,4 +1,4 @@
-import {Component} from '@angular/core';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {DomSanitizer, SafeResourceUrl} from '@angular/platform-browser';
 import {environment} from '../../../environments/environment';
@@ -11,6 +11,7 @@ import {FormsModule} from '@angular/forms';
     imports: [CommonModule, MatExpansionModule, MatButtonToggleGroup, MatButtonToggle, FormsModule],
     templateUrl: './dashboard.html',
     styleUrl: './dashboard.css',
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Dashboard {
     dashboards: { id: string; url: SafeResourceUrl }[];

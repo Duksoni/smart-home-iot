@@ -1,0 +1,52 @@
+<div class="page-content">
+    <h1 class="page-title">Lights</h1>
+
+    <mat-card class="rgb-card">
+        <mat-card-header>
+            <mat-icon mat-card-avatar>lightbulb</mat-icon>
+            <mat-card-title>BRGB – Bedroom RGB Light</mat-card-title>
+        </mat-card-header>
+
+        <mat-card-content>
+            <!-- Live colour preview -->
+            <div
+                class="color-preview"
+                [style.background-color]="previewColor()"
+                role="img"
+            >
+                @if (isOff()) {
+                    <span class="off-label">OFF</span>
+                }
+            </div>
+
+
+            <p>Control the light color:</p>
+            <mat-divider></mat-divider>
+
+            <!-- Mode buttons -->
+            <div class="mode-grid" role="group">
+                @for (opt of modeOptions; track opt.mode) {
+                    <button
+                        mat-stroked-button
+                        class="mode-btn"
+                        [class.mode-btn--active]="currentMode() === opt.mode"
+                        [disabled]="rgbPending()"
+                        (click)="selectMode(opt.mode)"
+                    >
+                        <span class="mode-btn-inner">
+                            <span class="mode-swatch" [style.background-color]="opt.color"></span>
+                            <span class="mode-label">{{ opt.label }}</span>
+                        </span>
+                    </button>
+                }
+            </div>
+
+            @if (rgbPending()) {
+                <div class="pending-row">
+                    <mat-spinner diameter="20"></mat-spinner>
+                    <span>Applying…</span>
+                </div>
+            }
+        </mat-card-content>
+    </mat-card>
+</div>

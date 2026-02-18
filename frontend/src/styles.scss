@@ -41,3 +41,16 @@ body {
 }
 
 /* You can add global styles to this file, and also import other style files */
+
+.page-content {
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+}
+
+// Alarm snackbar override
+.alarm-snackbar {
+    --mdc-snackbar-container-color: #b00020;
+    --mdc-snackbar-supporting-text-color: #fff;
+    --mat-snack-bar-button-color: #ffcdd2;
+    font-weight: 600;
+}

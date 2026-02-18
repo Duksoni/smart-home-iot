@@ -1,1 +1,102 @@
-<h1 class="page-title">Timers</h1>
+<div class="page-content">
+    <h1 class="page-title">Kitchen Timer</h1>
+
+    <!-- 4SD Display -->
+    <div class="display-wrapper" [class.display--blink]="isBlinking()">
+        <span class="display-digit">{{ displayMM() }}</span>
+        <span class="display-colon">:</span>
+        <span class="display-digit">{{ displaySS() }}</span>
+    </div>
+
+    <p class="display-status">
+        @if (isBlinking()) {
+            Timer expired — press stop to dismiss
+        } @else if (isRunning()) {
+            Running…
+        } @else if (timerState()?.duration_seconds) {
+            Stopped
+        } @else {
+            Set a duration to begin
+        }
+    </p>
+
+    @if (error()) {
+        <p class="error-msg" role="alert">{{ error() }}</p>
+    }
+
+    <div class="controls-row">
+
+        <!-- Set timer -->
+        <mat-card>
+            <mat-card-header>
+                <mat-icon mat-card-avatar>timer</mat-icon>
+                <mat-card-title>Set Timer</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+                <form [formGroup]="setForm" (ngSubmit)="startTimer()" class="set-form">
+                    <div class="set-field-row">
+                        <mat-form-field appearance="outline">
+                            <mat-label>Minutes</mat-label>
+                            <input matInput type="number" formControlName="minutes" min="0" max="99"/>
+                        </mat-form-field>
+                        <span class="form-colon">:</span>
+                        <mat-form-field appearance="outline">
+                            <mat-label>Seconds</mat-label>
+                            <input matInput type="number" formControlName="seconds" min="0" max="59"/>
+                        </mat-form-field>
+                    </div>
+                    <button
+                        mat-raised-button
+                        type="submit"
+                        [disabled]="setForm.invalid || pending()"
+                    >
+                        <mat-icon>play_arrow</mat-icon>
+                        Start
+                    </button>
+                </form>
+            </mat-card-content>
+        </mat-card>
+
+        <!-- Quick actions -->
+        <mat-card>
+            <mat-card-header>
+                <mat-icon mat-card-avatar>add_alarm</mat-icon>
+                <mat-card-title>Controls</mat-card-title>
+                <mat-card-subtitle>Mirrors physical BTN on PI2</mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content class="quick-actions">
+                <button mat-raised-button (click)="addTime()"
+                        [disabled]="!isRunning() || pending()">
+                    <mat-icon>add</mat-icon>
+                    +{{ increment() }} s
+                </button>
+                <button mat-raised-button color="warn" (click)="stopBlink()"
+                        [disabled]="!isBlinking() || pending()">
+                    <mat-icon>stop</mat-icon>
+                    Stop Blink
+                </button>
+            </mat-card-content>
+        </mat-card>
+
+        <!-- Increment setting -->
+        <mat-card>
+            <mat-card-header>
+                <mat-icon mat-card-avatar>tune</mat-icon>
+                <mat-card-title>Button Increment (N)</mat-card-title>
+                <mat-card-subtitle>Seconds added per BTN press</mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+                <form [formGroup]="incrementForm" (ngSubmit)="saveIncrement()" class="increment-form">
+                    <mat-form-field appearance="outline">
+                        <mat-label>Seconds (N)</mat-label>
+                        <input matInput type="number" formControlName="increment" min="1" max="3600"/>
+                    </mat-form-field>
+                    <button mat-raised-button type="submit" [disabled]="incrementForm.invalid">
+                        Save
+                    </button>
+                </form>
+            </mat-card-content>
+        </mat-card>
+
+    </div>
+</div>

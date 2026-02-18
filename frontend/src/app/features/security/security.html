@@ -1,1 +1,207 @@
-<h1 class="page-title">Security</h1>
+<div class="page-content">
+    <h1 class="page-title">Security</h1>
+
+    <!-- Status row -->
+    <div class="status-row">
+
+        <!-- Alarm status card -->
+        <mat-card [class.card-alarm]="isActive()" [class.card-ok]="!isActive()">
+            <mat-card-header>
+                <mat-icon mat-card-avatar>{{ isActive() ? 'notifications_active' : 'security' }}</mat-icon>
+                <mat-card-title>Alarm</mat-card-title>
+                <mat-card-subtitle>{{ isActive() ? 'ACTIVE' : 'Clear' }}</mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+                @if (isActive()) {
+                    <p class="alarm-reason">
+                        <strong>Reason:</strong> {{ alarm()?.reason ?? 'Unknown' }}
+                    </p>
+                    @if (alarm()?.triggered_at) {
+                        <p class="alarm-time">
+                            <strong>Since:</strong>
+                            {{ alarm()!.triggered_at! * 1000 | date: 'HH:mm:ss, dd MMM' }}
+                        </p>
+                    }
+                } @else {
+                    <p class="status-ok">All clear. No alarm active.</p>
+                }
+            </mat-card-content>
+        </mat-card>
+
+        <!-- Armed status card -->
+        <mat-card [class.card-armed]="isArmed()" [class.card-ok]="!isArmed()">
+            <mat-card-header>
+                <mat-icon mat-card-avatar>{{ isArmed() ? 'lock' : 'lock_open' }}</mat-icon>
+                <mat-card-title>Security System</mat-card-title>
+                <mat-card-subtitle>{{ isArmed() ? 'ARMED' : 'Disarmed' }}</mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+                <p>{{ isArmed() ? 'Door sensors active. PIN required to enter.' : 'System is not armed.' }}</p>
+            </mat-card-content>
+        </mat-card>
+
+        <!-- Occupancy card -->
+        <mat-card>
+            <mat-card-header>
+                <mat-icon mat-card-avatar>people</mat-icon>
+                <mat-card-title>Occupancy</mat-card-title>
+                <mat-card-subtitle>People detected inside</mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+                <p class="occupancy-count">{{ peopleInside() }}</p>
+            </mat-card-content>
+        </mat-card>
+
+    </div>
+
+    @if (errorMessage()) {
+        <p class="error-msg" role="alert">{{ errorMessage() }}</p>
+    }
+
+    <mat-divider></mat-divider>
+
+    <!-- Controls row -->
+    <div class="controls-row">
+
+        <!-- Deactivate alarm -->
+        <mat-card>
+            <mat-card-header>
+                <mat-icon mat-card-avatar>phonelink_lock</mat-icon>
+                <mat-card-title>Deactivate Alarm</mat-card-title>
+                <mat-card-subtitle>Enter PIN to stop alarm and disarm</mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+                <form [formGroup]="deactivateForm" (ngSubmit)="deactivateAlarm()" class="pin-form">
+                    <mat-form-field appearance="outline">
+                        <mat-label>4-digit PIN</mat-label>
+                        <input
+                            matInput
+                            formControlName="pin"
+                            type="password"
+                            maxlength="4"
+                            inputmode="numeric"
+                            placeholder="••••"
+                            autocomplete="off"
+                        />
+                        @if (deactivateForm.get('pin')?.hasError('pattern')) {
+                            <mat-error>PIN must be exactly 4 digits</mat-error>
+                        }
+                    </mat-form-field>
+                    <button
+                        mat-raised-button
+                        type="submit"
+                        [disabled]="deactivateForm.invalid || actionPending()"
+                    >
+                        @if (actionPending()) {
+                            <mat-spinner diameter="20"></mat-spinner>
+                        } @else {
+                            Deactivate
+                        }
+                    </button>
+                </form>
+            </mat-card-content>
+        </mat-card>
+
+        <!-- Arm system -->
+        <mat-card>
+            <mat-card-header>
+                <mat-icon mat-card-avatar>verified_user</mat-icon>
+                <mat-card-title>Arm System</mat-card-title>
+                <mat-card-subtitle>Set a PIN and activate (10 s delay)</mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+                <form [formGroup]="armForm" (ngSubmit)="armSystem()" class="pin-form">
+                    <mat-form-field appearance="outline">
+                        <mat-label>4-digit PIN</mat-label>
+                        <input
+                            matInput
+                            formControlName="pin"
+                            type="password"
+                            maxlength="4"
+                            inputmode="numeric"
+                            placeholder="••••"
+                            autocomplete="new-password"
+                        />
+                        @if (armForm.get('pin')?.hasError('pattern')) {
+                            <mat-error>PIN must be exactly 4 digits</mat-error>
+                        }
+                    </mat-form-field>
+                    <div class="arm-btn-row">
+                        <button
+                            mat-raised-button
+                            type="submit"
+                            [disabled]="armForm.invalid || actionPending() || isArmed()"
+                        >
+                            Arm
+                        </button>
+                        <button
+                            mat-stroked-button
+                            type="button"
+                            (click)="disarmSystem()"
+                            [disabled]="actionPending() || !isArmed()"
+                        >
+                            Disarm
+                        </button>
+                    </div>
+                </form>
+            </mat-card-content>
+        </mat-card>
+
+        <!-- Manual trigger -->
+        <mat-card>
+            <mat-card-header>
+                <mat-icon mat-card-avatar>campaign</mat-icon>
+                <mat-card-title>Manual Trigger</mat-card-title>
+                <mat-card-subtitle>Trigger alarm from web application</mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+                <p class="manual-hint">Use this to test the alarm or raise an alert manually.</p>
+                <button
+                    mat-raised-button
+                    (click)="triggerAlarm()"
+                    [disabled]="actionPending() || isActive()"
+                >
+                    <mat-icon>warning</mat-icon>
+                    Trigger Alarm
+                </button>
+            </mat-card-content>
+        </mat-card>
+
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <!-- Alarm events log -->
+    <section>
+        <h2 id="events-heading">Recent Alarm Events</h2>
+
+        @if (eventsLoading()) {
+            <div class="loading-row">
+                <mat-spinner diameter="32"></mat-spinner>
+            </div>
+        } @else if (events().length === 0) {
+            <p class="no-events">No alarm events recorded yet.</p>
+        } @else {
+            <table mat-table [dataSource]="events()" class="events-table">
+                <ng-container matColumnDef="time">
+                    <th mat-header-cell *matHeaderCellDef>Time</th>
+                    <td mat-cell *matCellDef="let e">{{ e.time | date: 'dd MMM HH:mm:ss' }}</td>
+                </ng-container>
+                <ng-container matColumnDef="action">
+                    <th mat-header-cell *matHeaderCellDef>Action</th>
+                    <td mat-cell *matCellDef="let e">
+                        <mat-chip [class.chip-active]="e.action === 'activated'">
+                            {{ e.action ?? '—' }}
+                        </mat-chip>
+                    </td>
+                </ng-container>
+                <ng-container matColumnDef="reason">
+                    <th mat-header-cell *matHeaderCellDef>Reason</th>
+                    <td mat-cell *matCellDef="let e">{{ e.reason ?? '—' }}</td>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="eventColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: eventColumns"></tr>
+            </table>
+        }
+    </section>
+</div>

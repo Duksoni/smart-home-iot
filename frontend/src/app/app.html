@@ -1,2 +1,16 @@
 <app-navbar></app-navbar>
+
+@if (alarmService.alarm()?.active) {
+    <div class="alarm-banner" role="alert">
+        <mat-icon>warning</mat-icon>
+        <span>
+      ALARM ACTIVE
+            @if (alarmService.alarm()?.reason) {
+                — {{ alarmService.alarm()!.reason }}
+            }
+    </span>
+        <a routerLink="/security" class="alarm-link">Go to Security</a>
+    </div>
+}
+
 <router-outlet></router-outlet>

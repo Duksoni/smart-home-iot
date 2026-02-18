@@ -1,29 +1,37 @@
-import {Component, OnInit, signal} from '@angular/core';
-import {CommonModule} from '@angular/common';
+import {ChangeDetectionStrategy, Component, inject, OnInit, signal} from '@angular/core';
 import {RouterLink, RouterLinkActive} from '@angular/router';
 import {MatToolbarModule} from '@angular/material/toolbar';
 import {MatButtonModule} from '@angular/material/button';
+import {MatBadgeModule} from '@angular/material/badge';
+import {MatIconModule} from '@angular/material/icon';
+import {DatePipe} from '@angular/common';
+import {AlarmService} from '../../core/alarm.service';
 
 @Component({
     selector: 'app-navbar',
     imports: [
-        CommonModule,
         RouterLink,
         RouterLinkActive,
         MatToolbarModule,
         MatButtonModule,
+        MatBadgeModule,
+        MatIconModule,
+        DatePipe,
     ],
     templateUrl: './navbar.html',
     styleUrl: './navbar.css',
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Navbar implements OnInit {
-    navLinks = [
+    readonly alarmService = inject(AlarmService);
+
+    readonly navLinks = [
         {label: 'Dashboard', path: '/dashboard'},
-        {label: 'Streams', path: '/streams'},
         {label: 'Security', path: '/security'},
+        {label: 'Streams', path: '/streams'},
+        {label: 'Readings', path: '/readings'},
         {label: 'Timers', path: '/timers'},
-        {label: 'Sensors', path: '/sensors'},
-        {label: 'Stats', path: '/stats'},
+        {label: 'Lights', path: '/lights'},
     ];
 
     clock = signal(new Date());
@@ -32,12 +40,9 @@ export class Navbar implements OnInit {
         const tick = () => {
             const now = new Date();
             this.clock.set(now);
-
             const msUntilNextSecond = 1000 - now.getMilliseconds();
             setTimeout(tick, msUntilNextSecond);
         };
-
         tick();
     }
-
 }

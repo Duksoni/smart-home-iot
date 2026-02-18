@@ -1,8 +1,8 @@
 import {Routes} from '@angular/router';
 import {Dashboard} from './features/dashboard/dashboard';
 import {Security} from './features/security/security';
-import {Sensors} from './features/sensors/sensors';
-import {Stats} from './features/stats/stats';
+import {Readings} from './features/readings/readings';
+import {Lights} from './features/lights/lights';
 import {Streams} from './features/streams/streams';
 import {Timers} from './features/timers/timers';
 
@@ -24,12 +24,12 @@ export const routes: Routes = [
         component: Timers,
     },
     {
-        path: 'sensors',
-        component: Sensors,
+        path: 'readings',
+        component: Readings,
     },
     {
-        path: 'stats',
-        component: Stats,
+        path: 'lights',
+        component: Lights,
     },
     {path: '', redirectTo: 'dashboard', pathMatch: 'full'},
     {path: '**', redirectTo: 'dashboard', pathMatch: 'full'},

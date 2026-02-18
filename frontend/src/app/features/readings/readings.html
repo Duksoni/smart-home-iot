@@ -1,0 +1,120 @@
+<div class="page-content">
+    <h1 class="page-title">Readings</h1>
+
+    @if (lastUpdated()) {
+        <p class="last-updated">
+            Last updated: {{ lastUpdated() | date: 'HH:mm:ss' }}
+        </p>
+    }
+
+    @if (loading()) {
+        <div class="loading-row">
+            <mat-spinner diameter="48"></mat-spinner>
+        </div>
+    } @else {
+
+        <!-- ── Sensors ───────────────────────────────────────────────────────── -->
+        <section>
+            <h2 id="sensors-heading" class="section-heading">Sensors</h2>
+
+            @for (group of sensorGroups; track group.pi) {
+                <div class="pi-group">
+                    <h3 class="pi-label">{{ group.label }}</h3>
+                    <div class="card-grid">
+                        @for (code of group.codes; track code) {
+                            @let readings = readingsForCode(code);
+                            <mat-card
+                                class="reading-card"
+                                [class.reading-card--no-data]="readings.length === 0"
+                            >
+                                <mat-card-header>
+                                    <mat-icon mat-card-avatar>{{ iconForCode(code) }}</mat-icon>
+                                    <mat-card-title>{{ code }}</mat-card-title>
+                                    <mat-card-subtitle>
+                                        @if (readings.length > 0) {
+                                            <span class="hint">{{ readings[0].received_at * 1000 | date: 'HH:mm:ss' }}</span>
+
+                                        } @else {
+                                            No data yet
+                                        }
+                                    </mat-card-subtitle>
+                                </mat-card-header>
+
+                                <mat-card-content class="card-body">
+                                    @if (readings.length === 0) {
+                                        <p class="value value--empty">—</p>
+                                        <p class="hint">Waiting for data…</p>
+                                    } @else if (readings.length === 1) {
+                                        <p class="value">{{ formatSensorValue(readings[0]) }}</p>
+                                        <div class="chip-row">
+                                            @if (isSimulatedSensor(readings[0])) {
+                                                <mat-chip class="sim-chip">SIM</mat-chip>
+                                            }
+                                        </div>
+                                    } @else {
+                                        <!-- Multi-measurement (DHT: temp + humidity) -->
+                                        <div class="multi-readings">
+                                            @for (r of readings; track r.measurement) {
+                                                <div class="reading-row">
+                                                    <span class="reading-label">{{ measurementLabel(r) }}</span>
+                                                    <span class="value value--inline">{{ formatSensorValue(r) }}</span>
+                                                </div>
+                                                @if (!$last) {
+                                                    <mat-divider></mat-divider>
+                                                }
+                                            }
+                                        </div>
+                                        <div class="chip-row">
+                                            @if (isSimulatedSensor(readings[0])) {
+                                                <mat-chip class="sim-chip">SIM</mat-chip>
+                                            }
+                                        </div>
+                                    }
+                                </mat-card-content>
+                            </mat-card>
+                        }
+                    </div>
+                </div>
+            }
+        </section>
+
+        <!-- ── Actuators ─────────────────────────────────────────────────────── -->
+        <section>
+            <h2 id="actuators-heading" class="section-heading">Actuators</h2>
+
+            @if (actuatorList().length === 0) {
+                <p class="hint">No actuator data received yet.</p>
+            } @else {
+                <div class="card-grid">
+                    @for (a of actuatorList(); track a.code) {
+                        <mat-card class="reading-card">
+                            <mat-card-header>
+                                <mat-icon mat-card-avatar>{{ iconForActuator(a.code) }}</mat-icon>
+                                <mat-card-title>{{ a.code }}</mat-card-title>
+                                <mat-card-subtitle>
+                                    @if (a['updated_at']) {
+                                        <span class="hint">{{ a['updated_at'] * 1000 | date: 'HH:mm:ss' }}</span>
+                                    }
+                                </mat-card-subtitle>
+                            </mat-card-header>
+                            <mat-card-content class="card-body">
+                                <p
+                                    class="value"
+                                    [class.value--on]="formatActuatorValue(a) === 'ON'"
+                                    [class.value--off]="formatActuatorValue(a) === 'OFF'"
+                                >
+                                    {{ formatActuatorValue(a) }}
+                                </p>
+                                <div class="chip-row">
+                                    @if (isSimulatedActuator(a)) {
+                                        <mat-chip class="sim-chip">SIM</mat-chip>
+                                    }
+                                </div>
+                            </mat-card-content>
+                        </mat-card>
+                    }
+                </div>
+            }
+        </section>
+    }
+</div>

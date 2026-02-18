@@ -1,0 +1,111 @@
+.page-content {
+    max-width: 1200px;
+}
+
+.status-row,
+.controls-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.25rem;
+    margin: 1.5rem 0;
+}
+
+mat-card {
+    transition: box-shadow 0.2s;
+}
+
+.card-alarm {
+    border-left: 4px solid #e53935;
+    animation: pulse-border 1.2s ease-in-out infinite alternate;
+}
+
+.card-ok {
+    border-left: 4px solid #43a047;
+}
+
+.card-armed {
+    border-left: 4px solid #fb8c00;
+}
+
+@keyframes pulse-border {
+    from {
+        border-left-color: #e53935;
+    }
+    to {
+        border-left-color: #b71c1c;
+    }
+}
+
+.alarm-reason,
+.alarm-time {
+    margin: 0.25rem 0;
+    font-size: 0.9rem;
+}
+
+.status-ok {
+    color: #66bb6a;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.occupancy-count {
+    font-size: 2.5rem;
+    font-weight: 700;
+    text-align: center;
+    margin: 0.5rem 0 0;
+    color: var(--mat-sys-primary);
+}
+
+.error-msg {
+    color: #ef5350;
+    margin: 0.75rem 0;
+    font-weight: 500;
+}
+
+.pin-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding-top: 0.5rem;
+}
+
+.arm-btn-row {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.manual-hint {
+    font-size: 0.85rem;
+    opacity: 0.7;
+    margin: 0 0 1rem;
+}
+
+mat-divider {
+    margin: 1.5rem 0;
+}
+
+h2 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.loading-row {
+    display: flex;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.no-events {
+    opacity: 0.6;
+    font-style: italic;
+}
+
+.events-table {
+    width: 100%;
+}
+
+.chip-active {
+    background-color: #e53935 !important;
+    color: #fff !important;
+}

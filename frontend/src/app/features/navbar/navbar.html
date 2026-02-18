@@ -1,19 +1,37 @@
 <mat-toolbar>
     <div class="brand-area">
         <span class="brand">Smart Home IoT</span>
-        <span class="clock">{{clock() | date: 'HH:mm:ss'}}</span>
+        <span class="clock">{{ clock() | date: 'HH:mm:ss' }}</span>
     </div>
     <span class="spacer"></span>
     <nav>
-        @for (link of navLinks; track link) {
-            <a
-                mat-button
-                [routerLink]="link.path"
-                routerLinkActive="active-link"
-                [routerLinkActiveOptions]="{exact: true}"
-            >
-                {{link.label}}
-            </a>
+        @for (link of navLinks; track link.path) {
+            @if (link.path === '/security' && alarmService.alarm()?.active) {
+                <a
+                    mat-button
+                    [routerLink]="link.path"
+                    routerLinkActive="active-link"
+                    [routerLinkActiveOptions]="{ exact: true }"
+                    class="alarm-nav-btn"
+                >
+                    <mat-icon
+                        matBadge="!"
+                        matBadgeSize="small"
+                    >security
+                    </mat-icon
+                    >
+                    {{ link.label }}
+                </a>
+            } @else {
+                <a
+                    mat-button
+                    [routerLink]="link.path"
+                    routerLinkActive="active-link"
+                    [routerLinkActiveOptions]="{ exact: true }"
+                >
+                    {{ link.label }}
+                </a>
+            }
         }
     </nav>
 </mat-toolbar>

@@ -1,0 +1,164 @@
+.page-content {
+    max-width: 1300px;
+}
+
+.last-updated {
+    text-align: center;
+    font-size: 0.8rem;
+    opacity: 0.55;
+    margin: -0.5rem 0 1.5rem;
+}
+
+.loading-row {
+    display: flex;
+    justify-content: center;
+    padding: 4rem;
+}
+
+/* ── Section headings ─────────────────────────────────────────────────────── */
+
+.section-heading {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin: 2rem 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--mat-sys-primary);
+    color: var(--mat-sys-primary);
+}
+
+section:first-of-type .section-heading {
+    margin-top: 0;
+}
+
+/* ── PI sub-groups ───────────────────────────────────────────────────────── */
+
+.pi-group {
+    margin-bottom: 1.75rem;
+}
+
+.pi-label {
+    font-size: 1rem;
+    font-weight: 600;
+    opacity: 0.75;
+    margin: 0 0 0.75rem;
+    padding-bottom: 0.3rem;
+    border-bottom: 1px solid var(--mat-sys-outline-variant);
+}
+
+/* ── Card grid ───────────────────────────────────────────────────────────── */
+
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    /* All cards in a row share the same height via align-items stretch (default) */
+    align-items: stretch;
+}
+
+/*
+ * Equal-height cards: the mat-card itself must be a flex column so its
+ * mat-card-content can grow to fill remaining space.
+ */
+.reading-card {
+    display: flex !important;
+    flex-direction: column !important;
+    transition: box-shadow 0.2s;
+}
+
+.reading-card--no-data {
+    opacity: 0.5;
+}
+
+/*
+ * card-body is applied to mat-card-content.
+ * flex: 1 makes it fill remaining card height.
+ * flex-direction: column + justify-content: space-between pushes the chip-row
+ * to the bottom regardless of how much value text is above it.
+ */
+.card-body {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 !important;
+    justify-content: space-between !important;
+}
+
+/* ── Values ──────────────────────────────────────────────────────────────── */
+
+.value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin: 0.5rem 0 0;
+    color: var(--mat-sys-primary);
+}
+
+.value--empty {
+    color: var(--mat-sys-outline);
+}
+
+.value--on {
+    color: #66bb6a;
+}
+
+.value--off {
+    color: var(--mat-sys-outline);
+}
+
+.value--inline {
+    font-size: 1.4rem;
+    margin: 0;
+}
+
+/* ── Multi-reading layout (DHT) ──────────────────────────────────────────── */
+
+.multi-readings {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin: 0.5rem 0 0;
+}
+
+.reading-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.2rem 0;
+}
+
+.reading-label {
+    font-size: 0.8rem;
+    opacity: 0.65;
+    flex-shrink: 0;
+}
+
+mat-divider {
+    margin: 0.1rem 0;
+}
+
+/* ── Chip row — always at the bottom of card-body ────────────────────────── */
+
+.chip-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+    min-height: 1.4rem; /* reserve space even when no chip is shown */
+}
+
+/* ── Chips & meta ────────────────────────────────────────────────────────── */
+
+.sim-chip {
+    font-size: 0.65rem !important;
+    height: 1.2rem !important;
+    min-height: unset !important;
+    background-color: var(--mat-sys-tertiary-container) !important;
+    color: var(--mat-sys-on-tertiary-container) !important;
+}
+
+.hint {
+    font-size: 0.8rem;
+    opacity: 0.5;
+    font-style: italic;
+    margin: 0;
+}
