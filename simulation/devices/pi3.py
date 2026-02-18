@@ -4,6 +4,7 @@ import time
 from components.dht import run_dht
 from components.ir_receiver import run_ir_receiver, send_key
 from components.motion import run_dpir
+from lcd_screen_coordinator import start_lcd_screen_coordinator
 from mqtt_publisher import init_mqtt_publisher
 from rgb_light_coordinator import start_rgb_light_coordinator
 from settings import get_device_config
@@ -75,7 +76,10 @@ def run(settings):
     threads = []
     stop_event = threading.Event()
 
-    brgb_subscriber = start_rgb_light_coordinator(settings.get("mqtt"), hardware_config)
+    broker_settings = settings.get("mqtt")
+
+    brgb_subscriber = start_rgb_light_coordinator(broker_settings, hardware_config)
+    lcd_screen_coordinator, lcd_screen_subscriber = start_lcd_screen_coordinator(broker_settings, hardware_config)
 
     _start_sensor_threads(device_config, hardware_config, threads, stop_event)
 
@@ -93,6 +97,8 @@ def run(settings):
 
     publisher.stop()
     brgb_subscriber.stop()
+    lcd_screen_subscriber.stop()
+    lcd_screen_coordinator.stop()
 
     stop_event.set()
     for thread in threads:
