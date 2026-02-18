@@ -13,6 +13,8 @@ class Settings(BaseSettings):
     mqtt_port: int
     mqtt_topic_prefix: str
 
+    alarm_pin: str
+
     class Config:
         env_file = ".env"
 
