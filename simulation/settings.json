@@ -168,6 +168,8 @@
             }
         },
         "GSG": {
+            "simulated": true,
+            "gyro_threshold": 50.0
         },
 
         "DHT1": {

@@ -9,74 +9,72 @@ class DHT:
     DHTLIB_ERROR_TIMEOUT = -2
     DHTLIB_INVALID_VALUE = -999
 
-    DHTLIB_DHT11_WAKEUP = 0.020  # 0.018		#18ms
-    DHTLIB_TIMEOUT = 0.0001  # 100us
+    DHTLIB_DHT11_WAKEUP = 0.020#0.018		#18ms
+    DHTLIB_TIMEOUT = 0.0001			#100us
 
     humidity = 0
     temperature = 0
 
-    def __init__(self, pin):
+    def __init__(self,pin):
         self.pin = pin
-        self.bits = [0, 0, 0, 0, 0]
+        self.bits = [0,0,0,0,0]
         GPIO.setmode(GPIO.BCM)
-
-    # Read DHT sensor, store the original data in bits[]
-    def read_sensor(self, pin, wakeupDelay):
+    #Read DHT sensor, store the original data in bits[]
+    def read_sensor(self,pin,wakeupDelay):
         mask = 0x80
         idx = 0
-        self.bits = [0, 0, 0, 0, 0]
-        GPIO.setup(pin, GPIO.OUT)
-        GPIO.output(pin, GPIO.LOW)
+        self.bits = [0,0,0,0,0]
+        GPIO.setup(pin,GPIO.OUT)
+        GPIO.output(pin,GPIO.LOW)
         time.sleep(wakeupDelay)
-        GPIO.output(pin, GPIO.HIGH)
-        # time.sleep(40*0.000001)
-        GPIO.setup(pin, GPIO.IN)
+        GPIO.output(pin,GPIO.HIGH)
+        #time.sleep(40*0.000001)
+        GPIO.setup(pin,GPIO.IN)
 
         loopCnt = self.DHTLIB_TIMEOUT
         t = time.time()
-        while GPIO.input(pin) == GPIO.LOW:
-            if (time.time() - t) > loopCnt:
-                # print ("Echo LOW")
+        while(GPIO.input(pin) == GPIO.LOW):
+            if((time.time() - t) > loopCnt):
+                #print ("Echo LOW")
                 return self.DHTLIB_ERROR_TIMEOUT
         t = time.time()
-        while GPIO.input(pin) == GPIO.HIGH:
-            if (time.time() - t) > loopCnt:
-                # print ("Echo HIGH")
+        while(GPIO.input(pin) == GPIO.HIGH):
+            if((time.time() - t) > loopCnt):
+                #print ("Echo HIGH")
                 return self.DHTLIB_ERROR_TIMEOUT
-        for i in range(0, 40, 1):
+        for i in range(0,40,1):
             t = time.time()
-            while GPIO.input(pin) == GPIO.LOW:
-                if (time.time() - t) > loopCnt:
-                    # print ("Data Low %d"%(i))
+            while(GPIO.input(pin) == GPIO.LOW):
+                if((time.time() - t) > loopCnt):
+                    #print ("Data Low %d"%(i))
                     return self.DHTLIB_ERROR_TIMEOUT
             t = time.time()
-            while GPIO.input(pin) == GPIO.HIGH:
-                if (time.time() - t) > loopCnt:
-                    # print ("Data HIGH %d"%(i))
+            while(GPIO.input(pin) == GPIO.HIGH):
+                if((time.time() - t) > loopCnt):
+                    #print ("Data HIGH %d"%(i))
                     return self.DHTLIB_ERROR_TIMEOUT
-            if (time.time() - t) > 0.00005:
+            if((time.time() - t) > 0.00005):
                 self.bits[idx] |= mask
-            # print("t : %f"%(time.time()-t))
+            #print("t : %f"%(time.time()-t))
             mask >>= 1
-            if mask == 0:
+            if(mask == 0):
                 mask = 0x80
                 idx += 1
-        # print (self.bits)
-        GPIO.setup(pin, GPIO.OUT)
-        GPIO.output(pin, GPIO.HIGH)
+        #print (self.bits)
+        GPIO.setup(pin,GPIO.OUT)
+        GPIO.output(pin,GPIO.HIGH)
         return self.DHTLIB_OK
-
-    # Read DHT sensor, analyze the data of temperature and humidity
+    #Read DHT sensor, analyze the data of temperature and humidity
     def read_DHT11(self):
-        rv = self.read_sensor(self.pin, self.DHTLIB_DHT11_WAKEUP)
-        if rv is not self.DHTLIB_OK:
+        rv = self.read_sensor(self.pin,self.DHTLIB_DHT11_WAKEUP)
+        if (rv is not self.DHTLIB_OK):
             self.humidity = self.DHTLIB_INVALID_VALUE
             self.temperature = self.DHTLIB_INVALID_VALUE
             return rv
         self.humidity = self.bits[0]
-        self.temperature = self.bits[2] + self.bits[3] * 0.1
+        self.temperature = self.bits[2] + self.bits[3]*0.1
         sumChk = ((self.bits[0] + self.bits[1] + self.bits[2] + self.bits[3]) & 0xFF)
-        if self.bits[4] is not sumChk:
+        if(self.bits[4] is not sumChk):
             return self.DHTLIB_ERROR_CHECKSUM
         return self.DHTLIB_OK
 
@@ -90,11 +88,12 @@ def parse_check_code(code):
         return "DHTLIB_ERROR_TIMEOUT"
     elif code == -999:
         return "DHTLIB_INVALID_VALUE"
+    return "NOT_GOOD"
 
 
-def run_dht_loop(dht, delay, callback, stop_event):
+def run_dht_loop(dht: DHT, delay, callback, stop_event):
     while True:
-        check = dht.readDHT11()
+        check = dht.read_DHT11()
         code = parse_check_code(check)
         humidity, temperature = dht.humidity, dht.temperature
         callback(humidity, temperature, code)
