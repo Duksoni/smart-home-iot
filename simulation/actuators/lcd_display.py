@@ -24,6 +24,7 @@ class LCD:
         self.lcd.begin(16, 2)
 
     def display(self, first_row: str, second_row: str):
+        self.lcd.clear()
         self.lcd.set_cursor(0, 0)
         self.lcd.message(f"{first_row}\n")
         self.lcd.message(second_row)

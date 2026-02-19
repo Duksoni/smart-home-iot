@@ -1,15 +1,20 @@
 import threading
-from typing import List
+from typing import List, Callable, Any
 
 from paho.mqtt import client as mqtt_client
-from paho.mqtt.client import CallbackOnMessage
+
+
+OnMessageCallback = Callable[
+    [mqtt_client.Client, Any, mqtt_client.MQTTMessage],
+    None,
+]
 
 
 class MqttSubscriber:
     def __init__(
         self,
         mqtt_settings: dict,
-        on_message: CallbackOnMessage,
+        on_message: OnMessageCallback,
         client_id: str,
         topics: List[str],
         qos: int = 0,
@@ -23,9 +28,12 @@ class MqttSubscriber:
         self._client = mqtt_client.Client(client_id=client_id)
         self._client.on_connect = self._handle_connect
         self._client.on_message = on_message
+
         self._stop_event = threading.Event()
         self._thread = threading.Thread(
-            target=self._run_loop, name=f"mqtt-subscriber-{client_id}", daemon=True
+            target=self._run_loop,
+            name=f"mqtt-subscriber-{client_id}",
+            daemon=True,
         )
 
     def stop(self):

@@ -1,86 +1,100 @@
+"""
+Membrane switch (DMS) component.
+
+Responsibilities on the PI side:
+- Accept key presses (real GPIO or simulator/console)
+- Accumulate digits until '#' is received
+- Publish each key press as  measurement=membrane_key
+- Publish the PIN attempt result as  measurement=membrane_attempt  (value=1/0)
+
+All alarm logic (arming, disarming, triggering) lives on the SERVER, which
+reacts to the membrane_attempt messages it receives over MQTT.
+"""
+
 import threading
 import time
 
-from door_coordinator import update_attempt, update_key
 from mqtt_publisher import get_publisher
 from simulators.membrane_switch import run_membrane_switch_simulator
 
 _valid_keys = [str(i) for i in range(10)] + ["#"]
 _password = "5279"
-_current_attempt = []
+_current_attempt: list[str] = []
 _auto_thread = None
 _auto_stop_event = None
 
 
-def set_password(new_password):
+def set_password(new_password: str) -> None:
     global _password
     _password = new_password
 
 
-def consume_current():
+def _consume_current() -> str:
     global _current_attempt
-    attempted_password = "".join(_current_attempt)[:-1]
+    attempted = "".join(_current_attempt)[:-1]  # strip the trailing '#'
     _current_attempt = []
-    return attempted_password
+    return attempted
 
 
-def send_key(settings, key):
-    global _current_attempt, _valid_keys
+def send_key(settings, key: str) -> None:
+    global _current_attempt
     if key not in _valid_keys:
-        print(f"Invalid key: {key}")
+        print(f"Invalid key: {key!r}")
         _current_attempt = []
         return
+
     _current_attempt.append(key)
     code = settings.get("code", "DMS")
-    update_key(code, key)
-
-    if settings.get("simulated"):
-        print(f"[SIM] DMS -> Key accepted: {key}")
-    else:
-        print(f"[GPIO] DMS -> Key accepted: {key}")
+    simulated = settings.get("simulated", True)
+    prefix = "[SIM]" if simulated else "[GPIO]"
+    print(f"{prefix} DMS -> Key accepted: {key}")
 
     publisher = get_publisher()
     if publisher:
         key_value = 10 if key == "#" else int(key)
-        key_payload = {
-            "measurement": "membrane_key",
-            "value": key_value,
-            "key": key,
-            "simulated": settings.get("simulated", True),
-            "device": publisher.device_name,
-            "code": code,
-        }
-        key_topic = publisher.build_topic("sensors", code)
-        publisher.enqueue_json(key_topic, key_payload)
+        publisher.enqueue_json(
+            publisher.build_topic("sensors", code),
+            {
+                "measurement": "membrane_key",
+                "value": key_value,
+                "key": key,
+                "simulated": simulated,
+                "device": publisher.device_name,
+                "code": code,
+            },
+        )
 
     if key != "#":
         return
 
-    attempt = consume_current()
+    # Full sequence received — evaluate attempt
+    attempt = _consume_current()
     success = attempt == _password
     print("Password accepted!" if success else "Wrong password! Try again.")
-    update_attempt(code, success)
+
     if publisher:
-        attempt_payload = {
-            "measurement": "membrane_attempt",
-            "value": 1 if success else 0,
-            "simulated": settings.get("simulated", True),
-            "device": publisher.device_name,
-            "code": code,
-        }
-        attempt_topic = publisher.build_topic("sensors", code)
-        publisher.enqueue_json(attempt_topic, attempt_payload)
+        publisher.enqueue_json(
+            publisher.build_topic("sensors", code),
+            {
+                "measurement": "membrane_attempt",
+                "value": 1 if success else 0,
+                "simulated": simulated,
+                "device": publisher.device_name,
+                "code": code,
+            },
+        )
 
 
 def run_membrane_switch(settings, threads, stop_event, code):
     if settings.get("pin_code"):
         set_password(settings["pin_code"])
+
     if settings.get("simulated"):
         print("Control DMS via console or by running it on auto loop")
     else:
         print("Starting DMS loop on GPIO")
         thread = threading.Thread(
-            target=run_membrane_switch_gpio_loop,
+            target=_run_gpio_loop,
             args=(settings, stop_event, code),
             name="sensor-dms",
             daemon=True,
@@ -89,7 +103,7 @@ def run_membrane_switch(settings, threads, stop_event, code):
         thread.start()
 
 
-def run_membrane_switch_gpio_loop(settings, stop_event, code, delay=0.1):
+def _run_gpio_loop(settings, stop_event, code, delay=0.1):
     from sensors.door_membrane_switch import DMS, run_dms_loop
 
     row_pins = settings.get("row_pins") or settings.get("rows")
@@ -122,7 +136,7 @@ def _auto_worker(delay, settings, stop_event):
     run_membrane_switch_simulator(delay, settings, send_key, stop_event)
 
 
-def start_auto(settings, threads=None, delay=2):
+def start_auto(settings, threads=None, delay=2) -> None:
     global _auto_thread, _auto_stop_event
     if _auto_thread and _auto_thread.is_alive():
         print("DMS auto-simulator already running")
@@ -142,7 +156,7 @@ def start_auto(settings, threads=None, delay=2):
     print("DMS auto-simulator started")
 
 
-def stop_auto():
+def stop_auto() -> None:
     global _auto_thread, _auto_stop_event
     if not _auto_thread:
         print("DMS auto-simulator is not running")
@@ -154,19 +168,14 @@ def stop_auto():
     print("DMS auto-simulator stopped")
 
 
-def send_sequence(settings, sequence):
-    if not sequence:
-        print("Empty sequence")
-        return
+def send_sequence(settings, sequence: str) -> None:
     seq = sequence.strip()
     if not seq.endswith("#"):
-        seq = seq + "#"
-
+        seq += "#"
     for ch in seq:
         if ch not in _valid_keys:
-            print(f"Invalid character in sequence: {ch}")
+            print(f"Invalid character in sequence: {ch!r}")
             return
-
     for ch in seq:
         send_key(settings, ch)
         time.sleep(settings.get("key_delay", 0.15))

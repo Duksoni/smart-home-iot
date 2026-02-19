@@ -10,10 +10,10 @@ class BRGBCoordinator:
     def __init__(self, device_settings: dict):
         self.settings = device_settings
 
-    def on_message(self, client, userdata, msg):
+    def on_message(self, client, userdata, message):
         print("Message received")
         try:
-            data = json.loads(msg.payload.decode("utf-8"))
+            data = json.loads(message.payload.decode("utf-8"))
             action = data.get("action")
 
             if action:

@@ -28,9 +28,9 @@ class LCDScreenCoordinator:
         self._stop_event = threading.Event()
         self._thread: Optional[Thread] = None
 
-    def on_message(self, client, userdata, msg):
+    def on_message(self, client, userdata, message):
         try:
-            data = json.loads(msg.payload.decode("utf-8"))
+            data = json.loads(message.payload.decode("utf-8"))
             device_code = data.get("code")
             measurement = data.get("measurement")
             value = data.get("value")
@@ -45,7 +45,7 @@ class LCDScreenCoordinator:
         hum = reading.get("humidity", "—")
         first_row = f"{location}"
         if temp and hum:
-            second_row = f"Temp: {temp}°C Hum: {hum}%"
+            second_row = f"T: {temp}C H: {hum}%"
         else:
             second_row = "No data"
         if self.lcd_screen:

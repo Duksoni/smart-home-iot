@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS
 
+from .alarm_logic import AlarmLogic
 from .api import api_router
 from .boot import hydrate_state_from_influx
 from .config import get_settings
@@ -25,6 +26,7 @@ _write_api = _influx.write_api(write_options=SYNCHRONOUS)
 _query_api = _influx.query_api()
 
 AppDependencies().set_query_api(_query_api)
+AppDependencies().set_write_api(_write_api)
 
 # ── Boot: seed state from InfluxDB before accepting requests ──────────────────
 
@@ -99,7 +101,7 @@ def _save_to_db(data: dict) -> None:
 
 
 def _update_state(data: dict) -> None:
-    """Dispatch an incoming MQTT payload to the appropriate HouseState method."""
+    """Dispatch an incoming MQTT payload to the appropriate state handler."""
     measurement = data.get("measurement", "")
     code = data.get("code", "").upper()
 
@@ -107,13 +109,31 @@ def _update_state(data: dict) -> None:
         return
 
     house = HouseState()
+    logic = AlarmLogic()
 
     if measurement in _SENSOR_MEASUREMENTS:
         house.update_sensor(code, data)
+        value = data.get("value")
+
+        # Route to alarm logic
+        if measurement == "motion":
+            logic.on_motion(code, int(value) if value is not None else 0)
+
+        elif measurement == "ultrasonic":
+            logic.on_distance(code, value)
+
+        elif measurement == "button":
+            logic.on_door(code, int(value) if value is not None else 0)
+
+        elif measurement == "membrane_attempt":
+            logic.on_membrane_attempt(code, bool(int(value)) if value is not None else False)
+
+        elif measurement == "gyroscope":
+            logic.on_gyroscope(code, value)
 
     elif measurement in _ACTUATOR_MEASUREMENTS:
         house.update_actuator(code, data)
-        # Keep the RGB singleton in sync when the device reports a mode change
+        # Keep RGB singleton in sync when the device reports a mode change
         # (e.g. triggered by IR remote rather than the web app).
         if measurement == "rgb_led" and code == "BRGB":
             mode = data.get("value")
@@ -124,15 +144,15 @@ def _update_state(data: dict) -> None:
                     pass
 
     elif measurement == "alarm_event":
+        # These come from device-side alarm coordinators; server is now the
+        # authority but we still honour explicit events for manual triggers
+        # sent from the web-app via the alarm router.
         action = data.get("action")
         if action == "activated":
             house.set_alarm(active=True, reason=data.get("reason"))
         elif action == "deactivated":
             house.set_alarm(active=False)
             house.set_armed(False)
-
-    elif measurement == "occupancy":
-        house.delta_people(int(data.get("value", 0)))
 
     elif measurement == "timer_event":
         action = data.get("action")

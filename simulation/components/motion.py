@@ -1,7 +1,6 @@
 import threading
 import time
 
-from door_coordinator import update_motion
 from mqtt_publisher import get_publisher
 from simulators.motion import run_dpir_simulator
 
@@ -13,7 +12,7 @@ def dpir_callback(state, code, simulated):
     print(f"Timestamp: {time.strftime('%H:%M:%S', t)}")
     print(f"Code: {code}")
     print(f"Motion state: {state_str}")
-    update_motion(code, state)
+
     publisher = get_publisher()
     if publisher:
         payload = {
@@ -29,12 +28,13 @@ def dpir_callback(state, code, simulated):
 
 
 def run_dpir(settings, threads, stop_event, code):
+    """Generic PIR runner — works for DPIR1, DPIR2, DPIR3."""
     simulated = settings.get("simulated", True)
 
     def callback(state, code_value):
         dpir_callback(state, code_value, simulated)
 
-    if settings.get("simulated"):
+    if simulated:
         print(f"Starting simulated {code}")
         interval = settings.get("interval", 3)
         sim_cfg = settings.get("simulator", {})
@@ -42,14 +42,7 @@ def run_dpir(settings, threads, stop_event, code):
         burst_range = sim_cfg.get("burst_range") or (2, 6)
         thread = threading.Thread(
             target=run_dpir_simulator,
-            args=(
-                interval,
-                callback,
-                stop_event,
-                code,
-                quiet_range,
-                burst_range,
-            ),
+            args=(interval, callback, stop_event, code, quiet_range, burst_range),
             name=f"simulator-{code.lower()}",
             daemon=True,
         )
@@ -61,10 +54,10 @@ def run_dpir(settings, threads, stop_event, code):
         pin = settings.get("pin")
         print(f"Starting real {code} loop on pin {pin}")
         dpir = DPIR(pin)
+        delay = settings.get("interval", 1.0)
 
         def loop():
             last_state = None
-            delay = settings.get("interval", 1.0)  # sampling interval (seconds)
             while not stop_event.is_set():
                 state = dpir.read()
                 if state != last_state:

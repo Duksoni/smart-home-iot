@@ -87,6 +87,7 @@ class HouseState:
     def _init(self) -> None:
         self._lock = threading.RLock()
         self._alarm = AlarmData()
+        self._arm_pending: bool = False  # PIN entered, waiting for 10-s grace to complete
         self._people_count: int = 0
         self._sensor_readings: dict[str, dict] = {}
         self._actuator_states: dict[str, dict] = {}
@@ -100,6 +101,7 @@ class HouseState:
             return {
                 "active": self._alarm.active,
                 "armed": self._alarm.armed,
+                "arm_pending": self._arm_pending,
                 "triggered_at": self._alarm.triggered_at,
                 "reason": self._alarm.reason,
             }
@@ -117,6 +119,14 @@ class HouseState:
     def set_armed(self, armed: bool) -> None:
         with self._lock:
             self._alarm.armed = armed
+
+    def set_arm_pending(self, pending: bool) -> None:
+        with self._lock:
+            self._arm_pending = pending
+
+    def is_arm_pending(self) -> bool:
+        with self._lock:
+            return self._arm_pending
 
     # ── Occupancy ─────────────────────────────────────────────────────────────
 

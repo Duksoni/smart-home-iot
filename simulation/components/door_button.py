@@ -1,17 +1,18 @@
 import time
 import threading
-from door_coordinator import update_door
+
 from mqtt_publisher import get_publisher
 from simulators.door_button import run_door_sensor_simulator
 
-def ds1_callback(state, code, simulated):
+
+def ds_callback(state, code, simulated):
     t = time.localtime()
     state_str = "OPEN" if state == 1 else "CLOSED"
     print("=" * 20)
     print(f"Timestamp: {time.strftime('%H:%M:%S', t)}")
     print(f"Code: {code}")
     print(f"Door state: {state_str}")
-    update_door(code, state)
+
     publisher = get_publisher()
     if publisher:
         payload = {
@@ -22,21 +23,21 @@ def ds1_callback(state, code, simulated):
             "code": code,
             "state": state_str,
         }
-        topic = publisher.build_topic( "sensors", code)
+        topic = publisher.build_topic("sensors", code)
         publisher.enqueue_json(topic, payload)
 
-def run_ds1(settings, threads, stop_event, code):
+
+def run_ds(settings, threads, stop_event, code):
+    """Generic door-button runner — works for DS1 and DS2."""
     simulated = settings.get("simulated", True)
     interval = settings.get("interval", 5)
 
     def callback(state, code_value):
-        ds1_callback(state, code_value, simulated)
+        ds_callback(state, code_value, simulated)
 
-    if settings.get("simulated"):
+    if simulated:
         print(f"Starting simulated {code}")
         sim_cfg = settings.get("simulator", {})
-        toggle_probability = sim_cfg.get("toggle_probability", 0.3)
-        initial_state = sim_cfg.get("initial_state", 0)
         thread = threading.Thread(
             target=run_door_sensor_simulator,
             args=(
@@ -44,11 +45,11 @@ def run_ds1(settings, threads, stop_event, code):
                 callback,
                 stop_event,
                 code,
-                toggle_probability,
-                initial_state,
+                sim_cfg.get("toggle_probability", 0.3),
+                sim_cfg.get("initial_state", 0),
             ),
             name=f"simulator-{code.lower()}",
-            daemon=True
+            daemon=True,
         )
         threads.append(thread)
         thread.start()
@@ -57,13 +58,16 @@ def run_ds1(settings, threads, stop_event, code):
         pin = settings.get("pin")
         debounce = settings.get("debounce_ms", 100)
         print(f"Starting real {code} loop on pin {pin}")
-        ds1 = DS(pin, debounce)
+        ds = DS(pin, debounce)
         thread = threading.Thread(
             target=run_ds_loop,
-            args=(ds1, interval, callback, stop_event, code),
+            args=(ds, interval, callback, stop_event, code),
             name=f"sensor-{code.lower()}",
-            daemon=True
+            daemon=True,
         )
         threads.append(thread)
         thread.start()
-        
+
+
+# Keep old name as alias so existing imports in pi1.py keep working
+run_ds1 = run_ds

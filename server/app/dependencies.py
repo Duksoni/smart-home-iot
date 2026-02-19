@@ -18,6 +18,7 @@ class AppDependencies:
             instance = super().__new__(cls)
             instance._mqtt_client = None
             instance._query_api = None
+            instance._write_api = None
             cls._instance = instance
         return cls._instance
 
@@ -29,6 +30,9 @@ class AppDependencies:
     def set_query_api(self, api) -> None:
         self._query_api = api
 
+    def set_write_api(self, api) -> None:
+        self._write_api = api
+
     # ── Getters (used as FastAPI Depends) ─────────────────────────────────────
 
     def get_mqtt_client(self):
@@ -36,6 +40,9 @@ class AppDependencies:
 
     def get_query_api(self):
         return self._query_api
+
+    def get_write_api(self):
+        return self._write_api
 
 
 # ── FastAPI-compatible dependency functions ───────────────────────────────────
@@ -48,3 +55,7 @@ def get_mqtt_client():
 
 def get_query_api():
     return AppDependencies().get_query_api()
+
+
+def get_write_api():
+    return AppDependencies().get_write_api()
