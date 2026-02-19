@@ -116,7 +116,7 @@ export class Readings implements OnInit, OnDestroy {
         if (m.includes('humidity')) return `${v} %`;
         if (m.includes('ultrasonic')) return `${v} cm`;
         if (m === 'motion') return v === 1 || v === '1' ? 'Motion' : 'Clear';
-        if (m === 'button') return v === 1 || v === '1' ? 'Open' : 'Closed';
+        if (m === 'button') return v === 1 || v === '1' ? '+30s' : 'Released';
         if (m === 'membrane_switch') return `Key: ${v}`;
         if (m === 'gyroscope') return `Δ ${v}`;
         return String(v ?? '—');
