@@ -27,8 +27,63 @@ def ds_callback(state, code, simulated):
         publisher.enqueue_json(topic, payload)
 
 
+def btn_callback(state, code, simulated):
+    t = time.localtime()
+    if state == 1:
+        return  # Only log releases
+    state_str = "PRESSED"
+    print("=" * 20)
+    print(f"Timestamp: {time.strftime('%H:%M:%S', t)}")
+    print(f"Code: {code}")
+    print(f"Button state: {state_str}")
+
+    publisher = get_publisher()
+    if publisher:
+        payload = {
+            "measurement": "timer_event",
+            "value": state,
+            "simulated": simulated,
+            "device": publisher.device_name,
+            "code": code,
+            "state": state_str,
+        }
+        topic = publisher.build_topic("sensors", code)
+        publisher.enqueue_json(topic, payload)
+
+
+def press_button(code):
+    print(f"Simulating {code} button press")
+    btn_callback(0, code, True)
+
+
+def run_btn(settings, threads, stop_event, code):
+    simulated = settings.get("simulated", True)
+
+    if simulated:
+        print(
+            "Simulate button press via console"
+        )
+    else:
+        interval = settings.get("interval")
+
+        def callback(state, code_value):
+            btn_callback(state, code_value, simulated)
+        from sensors.door_button import run_button_loop, BTN
+        pin = settings.get("pin")
+        debounce = settings.get("debounce_ms", 100)
+        print(f"Starting real {code} loop on pin {pin}")
+        ds = BTN(pin, debounce)
+        thread = threading.Thread(
+            target=run_button_loop,
+            args=(ds, interval, callback, stop_event, code),
+            name=f"sensor-{code.lower()}",
+            daemon=True,
+        )
+        threads.append(thread)
+        thread.start()
+
+
 def run_ds(settings, threads, stop_event, code):
-    """Generic door-button runner — works for DS1 and DS2."""
     simulated = settings.get("simulated", True)
     interval = settings.get("interval", 5)
 
@@ -54,20 +109,16 @@ def run_ds(settings, threads, stop_event, code):
         threads.append(thread)
         thread.start()
     else:
-        from sensors.door_button import run_ds_loop, DS
+        from sensors.door_button import run_button_loop, BTN
         pin = settings.get("pin")
         debounce = settings.get("debounce_ms", 100)
         print(f"Starting real {code} loop on pin {pin}")
-        ds = DS(pin, debounce)
+        ds = BTN(pin, debounce)
         thread = threading.Thread(
-            target=run_ds_loop,
+            target=run_button_loop,
             args=(ds, interval, callback, stop_event, code),
             name=f"sensor-{code.lower()}",
             daemon=True,
         )
         threads.append(thread)
         thread.start()
-
-
-# Keep old name as alias so existing imports in pi1.py keep working
-run_ds1 = run_ds

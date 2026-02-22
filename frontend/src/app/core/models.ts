@@ -45,7 +45,6 @@ export interface TimerState {
     remaining_seconds: number;
     running: boolean;
     blink_mode: boolean;
-    add_seconds_increment: number;
 }
 
 export type RgbMode =

@@ -248,7 +248,7 @@ class HouseState:
 _SENSOR_MEASUREMENTS: frozenset[str] = frozenset({
     "button", "ultrasonic", "motion",
     "temperature", "humidity",
-    "membrane_key", "membrane_attempt", "ir_receiver", "gyroscope",
+    "membrane_key", "membrane_attempt", "ir_receiver", "gyroscope", "timer_event"
 })
 
 _ACTUATOR_MEASUREMENTS: frozenset[str] = frozenset({

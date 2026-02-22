@@ -1,5 +1,5 @@
 {
-    "device": "PI3",
+    "device": "PI2",
     "device_map": {
         "PI1": {
             "sensors": [
@@ -150,12 +150,8 @@
         "BTN": {
             "pin": 26,
             "simulated": true,
-            "interval": 1,
             "debounce_ms": 100,
-            "simulator": {
-                "toggle_probability": 0.3,
-                "initial_state": 0
-            }
+            "interval": 0.01
         },
         "DHT3": {
             "pin": 17,

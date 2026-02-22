@@ -131,6 +131,13 @@ def _update_state(data: dict) -> None:
         elif measurement == "gyroscope":
             logic.on_gyroscope(code, value)
 
+        elif measurement == "timer_event":
+            timer = house.get_timer()
+            if timer['running']:
+                house.set_timer(timer['remaining_seconds'] + timer['add_seconds_increment'])
+            else:
+                house.stop_timer_blink()
+                
     elif measurement in _ACTUATOR_MEASUREMENTS:
         house.update_actuator(code, data)
         # Keep RGB singleton in sync when the device reports a mode change
@@ -154,12 +161,6 @@ def _update_state(data: dict) -> None:
             house.set_alarm(active=False)
             house.set_armed(False)
 
-    elif measurement == "timer_event":
-        action = data.get("action")
-        if action == "expired":
-            house.set_timer_blink(True)
-        elif action == "blink_stopped":
-            house.stop_timer_blink()
 
     elif measurement == "rgb_mode":
         mode = data.get("action")

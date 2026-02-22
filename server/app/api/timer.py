@@ -35,6 +35,8 @@ class IncrementRequest(BaseModel):
 
 @router.get("")
 async def get_timer():
+    if HouseState().get_timer()['remaining_seconds'] <= 0 and HouseState().get_timer()['running']:
+        HouseState().set_timer_blink(True)
     return HouseState().get_timer()
 
 

@@ -36,7 +36,6 @@ export class Timers implements OnInit, OnDestroy {
 
     readonly isRunning = computed(() => this.timerState()?.running ?? false);
     readonly isBlinking = computed(() => this.timerState()?.blink_mode ?? false);
-    readonly increment = computed(() => this.timerState()?.add_seconds_increment ?? 30);
 
     readonly displayMM = computed(() => {
         const s = this.displayRemaining();
@@ -65,7 +64,7 @@ export class Timers implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.fetchTimer();
-        this.serverPoll = interval(5_000)
+        this.serverPoll = interval(1_000)
             .pipe(switchMap(() => this.api.getTimer()))
             .subscribe({next: (t) => this.applyServerState(t)});
 
@@ -89,7 +88,6 @@ export class Timers implements OnInit, OnDestroy {
     private applyServerState(t: TimerState): void {
         this.timerState.set(t);
         this.displayRemaining.set(t.remaining_seconds);
-        this.incrementForm.patchValue({increment: t.add_seconds_increment});
     }
 
     startTimer(): void {

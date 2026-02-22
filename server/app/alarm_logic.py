@@ -190,7 +190,7 @@ class AlarmLogic:
         except (TypeError, ValueError):
             return
         if abs(delta) >= GYRO_THRESHOLD:
-            self._trigger_alarm(f"gyroscope:{code}")
+            self._trigger_alarm(f"gyroscope:{code} - {value}cm")
 
     # ── Alarm state changes ───────────────────────────────────────────────────
 

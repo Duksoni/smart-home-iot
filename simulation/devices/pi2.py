@@ -1,29 +1,20 @@
-"""
-PI2 device controller — Kitchen.
-
-Sensors  : DS2, DUS2, DPIR2, BTN, DHT3, GSG
-Actuators: none local (4SD is handled by a separate timer coordinator
-           driven from the server/web-app — implemented in checkpoint 3 part 2)
-
-PI2 publishes all sensor readings and the server handles alarm logic.
-"""
-
 import threading
 import time
 
 from components.dht import run_dht
-from components.door_button import run_ds
+from components.door_button import run_ds, run_btn, press_button
 from components.door_ultrasonic import run_dus
 from components.gsg import run_gsg, send_gyro_event
 from components.motion import run_dpir
 from mqtt_publisher import init_mqtt_publisher
 from settings import get_device_config
+from kitchen_timer_coordinator import start_kitchen_timer_coordinator
 
 RUNNERS = {
     "DS2":   run_ds,
     "DUS2":  run_dus,
     "DPIR2": run_dpir,
-    "BTN":   run_ds,      # BTN has the same button-press logic as a door sensor
+    "BTN":   run_btn,      # BTN has the same button-press logic as a door sensor
     "DHT3":  run_dht,
     "GSG":   run_gsg,
 }
@@ -64,6 +55,8 @@ def _console_thread(hardware_config, stop_event):
         if lower == "help":
             print("Commands:")
             print("  gsg send <delta>   — publish a gyroscope delta reading")
+            print("  btn press   — press timer button")
+            print()
             print("  exit | quit")
             continue
 
@@ -76,6 +69,8 @@ def _console_thread(hardware_config, stop_event):
             except ValueError:
                 print("delta must be a number, e.g.  gsg send 120.5")
             continue
+        elif len(parts) == 2 and parts[0].lower() == "btn" and parts[1].lower() == "press":
+            press_button("BTN")
 
         print("Unknown command. Type 'help'.")
 
@@ -91,6 +86,11 @@ def run(settings):
     threads = []
     stop_event = threading.Event()
 
+
+    broker_settings = settings.get("mqtt")
+
+    kitchen_timer_coordinator, kitchen_timer_subscriber = start_kitchen_timer_coordinator(broker_settings, hardware_config)
+
     _start_sensors(device_config, hardware_config, threads, stop_event)
 
     console_t = threading.Thread(
@@ -105,9 +105,11 @@ def run(settings):
     except KeyboardInterrupt:
         pass
 
-    stop_event.set()
     publisher.stop()
+    kitchen_timer_subscriber.stop()
+    kitchen_timer_coordinator.stop()
 
+    stop_event.set()
     for t in threads:
         t.join(timeout=1)
 

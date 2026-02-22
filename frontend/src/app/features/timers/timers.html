@@ -68,7 +68,7 @@
                 <button mat-raised-button (click)="addTime()"
                         [disabled]="!isRunning() || pending()">
                     <mat-icon>add</mat-icon>
-                    +{{ increment() }} s
+                    +{{ incrementForm.get("increment")?.value }} s
                 </button>
                 <button mat-raised-button color="warn" (click)="stopBlink()"
                         [disabled]="!isBlinking() || pending()">
