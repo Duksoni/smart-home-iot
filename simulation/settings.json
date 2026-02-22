@@ -111,7 +111,7 @@
         },
 
         "DS2": {
-            "pin": 22,
+            "pin": 5,
             "simulated": true,
             "interval": 1,
             "debounce_ms": 100,
@@ -121,8 +121,8 @@
             }
         },
         "DUS2": {
-            "trigger_pin": 23,
-            "echo_pin": 24,
+            "trigger_pin": 6,
+            "echo_pin": 13,
             "simulated": true,
             "interval": 5,
             "simulator": {
@@ -133,7 +133,7 @@
             }
         },
         "DPIR2": {
-            "pin": 27,
+            "pin": 19,
             "simulated": true,
             "interval": 3,
             "simulator": {
@@ -148,7 +148,7 @@
             }
         },
         "BTN": {
-            "pin": 24,
+            "pin": 26,
             "simulated": true,
             "interval": 1,
             "debounce_ms": 100,
@@ -168,6 +168,18 @@
             }
         },
         "GSG": {
+            "sda_pin": 2,
+            "scl_pin": 3,
+            "interval": 1,
+            "simulated": true,
+            "simulator": {
+                
+            }
+        },
+        "4SD": {
+            "segment_pins": [4, 7, 8, 9, 10, 11, 14, 15],
+            "digit_pins": [18, 22, 23, 24],
+            "simulated": true
         },
 
         "DHT1": {
