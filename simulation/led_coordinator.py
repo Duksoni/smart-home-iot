@@ -1,11 +1,3 @@
-"""
-LED actuator coordinator.
-
-Listens on  smarthome/commands/DL  for {"action": "on"} / {"action": "off"}
-and drives the door LED accordingly.  Works for any LED code — pass the
-code when calling start_led_coordinator().
-"""
-
 import json
 
 from components.led import led_control
@@ -32,10 +24,6 @@ class LEDCoordinator:
 
 
 def start_led_coordinator(broker_settings: dict, hardware_settings: dict, code: str):
-    """
-    Start the MQTT subscriber that drives the LED identified by `code`.
-    Returns the MqttSubscriber so the caller can stop() it on shutdown.
-    """
     settings = dict(hardware_settings.get(code, {}))
     settings.setdefault("code", code)
 

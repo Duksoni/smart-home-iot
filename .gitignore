@@ -209,3 +209,4 @@ __marimo__/
 /infrastructure/broker-data/
 /infrastructure/broker-log/
 /infrastructure/influxdb/
+/infrastructure/influxdb-config/

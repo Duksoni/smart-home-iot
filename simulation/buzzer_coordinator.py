@@ -1,17 +1,6 @@
-"""
-Buzzer actuator coordinator.
-
-Listens on  smarthome/commands/DB  for {"action": "start"} / {"action": "stop"}
-/ {"action": "short"} / {"action": "long"} and drives the buzzer accordingly.
-
-The buzzer worker runs in a background thread so that blocking beep durations
-never delay MQTT message processing.
-"""
-
 import json
 import queue
 import threading
-import time
 
 from components.buzzer import buzzer_control
 from mqtt_subscriber import MqttSubscriber

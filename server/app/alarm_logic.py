@@ -1,5 +1,5 @@
 """
-Server-side alarm logic — checkpoint 3, requirements 1–6.
+Server-side alarm logic
 
 All time-sensitive decisions (motion light, door-open timeout, arm grace,
 door-entry grace) use threading.Timer so the MQTT callback thread is never
@@ -7,18 +7,6 @@ blocked.  All shared mutable state is protected by a single Lock.
 
 Obtain the singleton with AlarmLogic().  Call configure() once at startup.
 
-Requirements implemented
-------------------------
-1. DPIR1 motion → DL on for MOTION_LIGHT_SECONDS, then off.
-2. DPIR1/DPIR2 fire → compare DUS1/DUS2 distance trend to decide
-   entering (+1) or leaving (−1).  Updates occupancy in HouseState.
-3. DS1/DS2 open for UNLOCK_ALARM_SECONDS → ALARM; clears when door closes.
-4a. DMS correct PIN + not armed → arm after ARM_GRACE_SECONDS.
-4b. DS1/DS2 opens + armed → ALARM unless correct PIN within
-    DOOR_ENTRY_GRACE_SECONDS.
-4c. DMS correct PIN + armed or alarm active → deactivate & disarm.
-5. Any DPIR fires + occupancy == 0 → ALARM.
-6. GSG |Δ| ≥ GYRO_THRESHOLD → ALARM (no simulation; server handles real HW).
 """
 
 import threading
