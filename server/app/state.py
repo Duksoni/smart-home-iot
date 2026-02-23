@@ -37,14 +37,14 @@ RGB_MODES: list[RgbMode] = [
 # CSS colour for each mode – used by the API so the frontend can render a
 # preview without maintaining its own mapping.
 MODE_CSS_COLOR: dict[str, str] = {
-    "light_off":     "#000000",
-    "light_red":     "#ff0000",
-    "light_green":   "#00ff00",
-    "light_blue":    "#0000ff",
-    "light_cyan":    "#00ffff",
+    "light_off": "#000000",
+    "light_red": "#ff0000",
+    "light_green": "#00ff00",
+    "light_blue": "#0000ff",
+    "light_cyan": "#00ffff",
     "light_magenta": "#ff00ff",
-    "light_yellow":  "#ffff00",
-    "light_white":   "#ffffff",
+    "light_yellow": "#ffff00",
+    "light_white": "#ffffff",
 }
 
 
@@ -59,7 +59,7 @@ class AlarmData:
 @dataclass
 class TimerData:
     duration_seconds: int = 0
-    started_at: Optional[float] = None   # monotonic
+    started_at: Optional[float] = None  # monotonic
     running: bool = False
     blink_mode: bool = False
     add_seconds_increment: int = 30
@@ -87,7 +87,9 @@ class HouseState:
     def _init(self) -> None:
         self._lock = threading.RLock()
         self._alarm = AlarmData()
-        self._arm_pending: bool = False  # PIN entered, waiting for 10-s grace to complete
+         # PIN entered, waiting for 10-s grace to complete
+        self._arm_pending: bool = False
+
         self._people_count: int = 0
         self._sensor_readings: dict[str, dict] = {}
         self._actuator_states: dict[str, dict] = {}
@@ -173,7 +175,9 @@ class HouseState:
         with self._lock:
             # Preserve a timestamp already present in the payload (e.g. from
             # boot-time hydration where it carries the original InfluxDB time).
-            updated_at = payload.get("updated_at") or payload.get("received_at") or time.time()
+            updated_at = (
+                payload.get("updated_at") or payload.get("received_at") or time.time()
+            )
             self._actuator_states[code] = {**payload, "updated_at": updated_at}
 
     def get_actuator(self, code: str) -> Optional[dict]:
@@ -200,7 +204,9 @@ class HouseState:
                 "add_seconds_increment": self._timer.add_seconds_increment,
             }
 
-    def set_timer(self, duration_seconds: int, add_seconds_increment: Optional[int] = None) -> None:
+    def set_timer(
+        self, duration_seconds: int, add_seconds_increment: Optional[int] = None
+    ) -> None:
         with self._lock:
             self._timer.duration_seconds = duration_seconds
             self._timer.started_at = time.monotonic()
@@ -245,12 +251,24 @@ class HouseState:
 # ── Measurement classification ────────────────────────────────────────────────
 # Defined here (not in main.py) so boot.py and main.py share one source of truth.
 
-_SENSOR_MEASUREMENTS: frozenset[str] = frozenset({
-    "button", "ultrasonic", "motion",
-    "temperature", "humidity",
-    "membrane_key", "membrane_attempt", "ir_receiver", "gyroscope", "timer_event"
-})
+_SENSOR_MEASUREMENTS: frozenset[str] = frozenset(
+    {
+        "button",
+        "ultrasonic",
+        "motion",
+        "temperature",
+        "humidity",
+        "membrane_attempt",
+        "ir_receiver",
+        "gyroscope",
+        "timer_event",
+    }
+)
 
-_ACTUATOR_MEASUREMENTS: frozenset[str] = frozenset({
-    "led", "buzzer", "rgb_led", "lcd_display", "segment_display",
-})
+_ACTUATOR_MEASUREMENTS: frozenset[str] = frozenset(
+    {
+        "led",
+        "buzzer",
+        "rgb_led"
+    }
+)

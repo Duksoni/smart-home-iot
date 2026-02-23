@@ -10,8 +10,6 @@ Alarm-related endpoints.
 """
 
 import json
-from typing import Optional
-
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 
@@ -23,6 +21,7 @@ router = APIRouter(prefix="/alarm", tags=["Alarm"])
 
 
 # ── Schemas ───────────────────────────────────────────────────────────────────
+
 
 class TriggerAlarmRequest(BaseModel):
     reason: str = "manual"
@@ -37,6 +36,7 @@ class ArmRequest(BaseModel):
 
 
 # ── Routes ────────────────────────────────────────────────────────────────────
+
 
 @router.get("")
 async def get_alarm():
@@ -78,6 +78,8 @@ async def arm_system(
     settings=Depends(get_settings),
 ):
     """Arm the security system from the web application."""
+    if settings.alarm_pin and body.pin != settings.alarm_pin:
+        raise HTTPException(status_code=403, detail="Incorrect PIN")
     HouseState().set_armed(True)
     _publish_alarm(mqtt, settings, "arm", pin=body.pin)
     return {"ok": True, "alarm": HouseState().get_alarm()}
@@ -124,6 +126,7 @@ from(bucket: "{settings.influxdb_bucket}")
 
 
 # ── Helper ────────────────────────────────────────────────────────────────────
+
 
 def _publish_alarm(mqtt_client, settings, action: str, **extra) -> None:
     topic = f"{settings.mqtt_topic_prefix}/commands/alarm"

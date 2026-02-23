@@ -19,16 +19,15 @@ from influxdb_client import Point
 from .dependencies import AppDependencies
 from .state import HouseState
 
-# ── Tunable constants ─────────────────────────────────────────────────────────
 
-UNLOCK_ALARM_SECONDS: float = 5.0    # req 3: door open this long → alarm
-MOTION_LIGHT_SECONDS: float = 10.0   # req 1: DL stays on this long
-ARM_GRACE_SECONDS: float = 10.0      # req 4a: delay before arming completes
+UNLOCK_ALARM_SECONDS: float = 5.0  # door open this long -> alarm
+MOTION_LIGHT_SECONDS: float = 10.0  # DL stays on this long
+ARM_GRACE_SECONDS: float = 10.0  # delay before arming completes
 DOOR_ENTRY_GRACE_SECONDS: float = 10.0  # req 4b: window to enter PIN after door
-OCCUPANCY_WINDOW_SECONDS: float = 5.0   # req 2: recent DUS window size
-GYRO_THRESHOLD: float = 50.0         # req 6: minimum |delta| to trigger alarm
+OCCUPANCY_WINDOW_SECONDS: float = 5.0  # req 2: recent DUS window size
+GYRO_THRESHOLD: float = 50.0  # req 6: minimum |delta| to trigger alarm
 
-# Door PIR → paired distance sensor
+# Door PIR -> paired distance sensor
 _DPIR_TO_DUS: dict[str, str] = {"DPIR1": "DUS1", "DPIR2": "DUS2"}
 
 # All motion sensors relevant to point 5
@@ -37,8 +36,9 @@ _ALL_DPIR_CODES: frozenset[str] = frozenset({"DPIR1", "DPIR2", "DPIR3"})
 # Door sensors relevant to points 3 & 4b
 _DOOR_CODES: frozenset[str] = frozenset({"DS1", "DS2"})
 
+
 # MQTT command topic prefix (must match broker settings)
-_CMD_PREFIX = "smarthome/commands"
+_CMD_PREFIX = f"smarthome/commands"
 
 
 class AlarmLogic:
@@ -58,18 +58,16 @@ class AlarmLogic:
     def _init(self) -> None:
         self._lock = threading.Lock()
 
-        # DUS distance history: code → deque of (monotonic_ts, distance_cm)
-        self._distance_history: dict[str, deque] = defaultdict(
-            lambda: deque(maxlen=30)
-        )
+        # DUS distance history: code -> deque of (monotonic_ts, distance_cm)
+        self._distance_history: dict[str, deque] = defaultdict(lambda: deque(maxlen=30))
 
         # Timestamp (monotonic) of last successful PIN entry on any DMS
         self._last_correct_pin_at: float = 0.0
 
         # --- Active timers (cancel before replacing) ---
-        # req 3: door open too long → alarm
+        # req 3: door open too long -> alarm
         self._unlock_timers: dict[str, threading.Timer] = {}
-        # req 4b: armed + door opened → alarm unless PIN entered in time
+        # req 4b: armed + door opened -> alarm unless PIN entered in time
         self._armed_door_timers: dict[str, threading.Timer] = {}
         # req 1: DL off after motion light timeout
         self._dl_off_timer: Optional[threading.Timer] = None
@@ -89,17 +87,17 @@ class AlarmLogic:
 
         house = HouseState()
 
-        # Req 5: nobody home + any motion → alarm
+        # Req 5: nobody home + any motion -> alarm
         if house.get_people_count() == 0:
             self._trigger_alarm(f"motion_no_occupants:{code}")
             # Still continue so req 1 fires for DPIR1
 
-        # Req 1: DPIR1 specifically → turn on DL for MOTION_LIGHT_SECONDS
+        # Req 1: DPIR1 specifically -> turn on DL for MOTION_LIGHT_SECONDS
         if code == "DPIR1":
             self._publish_command("DL", "on")
             self._reset_dl_off_timer()
 
-        # Req 2: door PIRs → update occupancy based on distance trend
+        # Req 2: door PIRs -> update occupancy based on distance trend
         if code in _DPIR_TO_DUS:
             self._update_occupancy(code)
 
@@ -108,9 +106,7 @@ class AlarmLogic:
         if value is None:
             return
         with self._lock:
-            self._distance_history[code].append(
-                (time.monotonic(), float(value))
-            )
+            self._distance_history[code].append((time.monotonic(), float(value)))
 
     def on_door(self, code: str, value: int) -> None:
         """Called when a door button (DS1/DS2) changes state."""
@@ -123,12 +119,14 @@ class AlarmLogic:
             # Req 3: start unlock-alarm timer
             self._start_unlock_timer(code)
 
-            # Req 4b: if armed + no recent valid PIN → start entry grace timer
+            # Req 4b: if armed + no recent valid PIN -> start entry grace timer
             alarm_state = house.get_alarm()
             if alarm_state["armed"] and not alarm_state["active"]:
                 now = time.monotonic()
                 with self._lock:
-                    recent_pin = (now - self._last_correct_pin_at) < DOOR_ENTRY_GRACE_SECONDS
+                    recent_pin = (
+                        now - self._last_correct_pin_at
+                    ) < DOOR_ENTRY_GRACE_SECONDS
                 if not recent_pin:
                     self._start_armed_door_timer(code)
         else:
@@ -136,7 +134,7 @@ class AlarmLogic:
             self._cancel_unlock_timer(code)
             self._cancel_armed_door_timer(code)
 
-            # Req 3: if this door being left open caused the current alarm → clear
+            # Req 3: if this door being left open caused the current alarm -> clear
             with self._lock:
                 caused_alarm = code in self._unlock_alarm_doors
             if caused_alarm:
@@ -163,12 +161,12 @@ class AlarmLogic:
         alarm_state = house.get_alarm()
 
         if alarm_state["active"] or alarm_state["armed"]:
-            # Req 4c: correct PIN while active/armed → deactivate everything
+            # Req 4c: correct PIN while active/armed -> deactivate everything
             self._cancel_armed_door_timers_all()
             self._cancel_unlock_timers_all()
             self._deactivate_alarm()
         elif not alarm_state["arm_pending"]:
-            # Req 4a: correct PIN while disarmed and not already pending → arm after grace
+            # Req 4a: correct PIN while disarmed and not already pending -> arm after grace
             self._start_arm_timer()
 
     def on_gyroscope(self, code: str, value) -> None:
@@ -196,7 +194,7 @@ class AlarmLogic:
                     self._arm_timer = None
 
         print(f"[ALARM] Activated — reason: {reason}")
-        self._publish_command("DB", "start")   # turn buzzer on
+        self._publish_command("DB", "start")  # turn buzzer on
         self._write_alarm_event("activated", reason)
 
     def _deactivate_alarm(self) -> None:
@@ -211,7 +209,7 @@ class AlarmLogic:
                 self._arm_timer = None
 
         print("[ALARM] Deactivated")
-        self._publish_command("DB", "stop")    # turn buzzer off
+        self._publish_command("DB", "stop")  # turn buzzer off
         self._write_alarm_event("deactivated", None)
 
     # ── Occupancy (req 2) ─────────────────────────────────────────────────────
@@ -229,7 +227,8 @@ class AlarmLogic:
         # Split into "recent" (last WINDOW seconds) and "older" (1–2 WINDOWs ago)
         recent = [d for ts, d in history if now - ts < OCCUPANCY_WINDOW_SECONDS]
         older = [
-            d for ts, d in history
+            d
+            for ts, d in history
             if OCCUPANCY_WINDOW_SECONDS <= (now - ts) < OCCUPANCY_WINDOW_SECONDS * 2
         ]
 
@@ -240,9 +239,9 @@ class AlarmLogic:
 
         if older:
             avg_older = sum(older) / len(older)
-            if avg_recent < avg_older - 5:          # approaching (entering)
+            if avg_recent < avg_older - 5:  # approaching (entering)
                 delta = 1
-            elif avg_recent > avg_older + 5:        # departing (leaving)
+            elif avg_recent > avg_older + 5:  # departing (leaving)
                 delta = -1
             else:
                 return  # no clear direction
@@ -255,13 +254,15 @@ class AlarmLogic:
         HouseState().delta_people(delta)
         self._write_occupancy_event(delta)
         action = "entered" if delta > 0 else "left"
-        print(f"[OCCUPANCY] Person {action} via {dpir_code} — "
-              f"count={HouseState().get_people_count()}")
+        print(
+            f"[OCCUPANCY] Person {action} via {dpir_code} — "
+            f"count={HouseState().get_people_count()}"
+        )
 
     # ── Timer management ──────────────────────────────────────────────────────
 
     def _start_unlock_timer(self, door_code: str) -> None:
-        """Req 3: door open for UNLOCK_ALARM_SECONDS → alarm."""
+        """Req 3: door open for UNLOCK_ALARM_SECONDS -> alarm."""
         with self._lock:
             existing = self._unlock_timers.get(door_code)
             if existing:
@@ -366,10 +367,12 @@ class AlarmLogic:
 
     def _publish_command(self, actuator_code: str, action: str) -> None:
         import json
+
         mqtt = AppDependencies().get_mqtt_client()
         if mqtt is None:
             return
         topic = f"{_CMD_PREFIX}/{actuator_code}"
+        print(f"[MQTT] Publishing command to {topic}: {action}")
         mqtt.publish(topic, json.dumps({"action": action}))
 
     # ── InfluxDB writes ───────────────────────────────────────────────────────
@@ -379,7 +382,7 @@ class AlarmLogic:
         if write_api is None:
             return
         from .config import get_settings
-        settings = get_settings()
+        settings = get_settings()        
         point = (
             Point("alarm_event")
             .tag("action", action)
@@ -401,11 +404,8 @@ class AlarmLogic:
             return
         from .config import get_settings
         settings = get_settings()
-        point = (
-            Point("occupancy")
-            .tag("code", "occupancy")
-            .field("value", delta)
-        )
+
+        point = Point("occupancy").tag("code", "occupancy").field("value", delta)
         try:
             write_api.write(
                 bucket=settings.influxdb_bucket,
