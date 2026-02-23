@@ -4,6 +4,7 @@ import {interval, Subscription} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 import {AlarmStatus} from './models';
 import {ApiService} from './api.service';
+import {Router} from '@angular/router';
 
 const POLL_MS = 5_000;
 
@@ -11,6 +12,7 @@ const POLL_MS = 5_000;
 export class AlarmService {
     private readonly api = inject(ApiService);
     private readonly snackBar = inject(MatSnackBar);
+    private router = inject(Router);
 
     readonly alarm = signal<AlarmStatus | null>(null);
 
@@ -51,6 +53,7 @@ export class AlarmService {
                 'Go to Security',
                 {panelClass: ['alarm-snackbar'], duration: 0},
             );
+            this.snackBarRef.afterDismissed().subscribe(() => this.router.navigate(['/security']));
         } else if (justCleared) {
             this.snackBarRef?.dismiss();
             this.snackBarRef = null;
