@@ -166,10 +166,7 @@
             "sda_pin": 2,
             "scl_pin": 3,
             "interval": 1,
-            "simulated": true,
-            "simulator": {
-                
-            }
+            "simulated": true
         },
         "4SD": {
             "segment_pins": [4, 7, 8, 9, 10, 11, 14, 15],
@@ -237,29 +234,5 @@
         "command_base_topic": "smarthome/commands",
         "publish_batch_size": 10,
         "publish_flush_interval": 2.0
-    },
-    "door_logic": {
-        "enabled": true,
-        "codes": {
-            "ds": "DS1",
-            "dpir": "DPIR1",
-            "dus": "DUS1",
-            "dms": "DMS",
-            "dl": "DL",
-            "db": "DB"
-        },
-        "presence_distance_cm": 70,
-        "distance_stale_seconds": 5,
-        "presence_light_seconds": 10,
-        "unlock_light_seconds": 8,
-        "door_open_alert_seconds": 15,
-        "door_open_beep_interval": 5,
-        "door_open_blink_interval": 0.5,
-        "failure_beep_pause_seconds": 0.15,
-        "coordinator_interval": 0.2,
-        "key_beep": "short",
-        "success_beep": "long",
-        "failure_beep": "double_short",
-        "door_open_beep": "short"
     }
 }

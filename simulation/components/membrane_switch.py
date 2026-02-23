@@ -41,6 +41,7 @@ def send_key(settings, key: str) -> None:
             {
                 "measurement": "membrane_attempt",
                 "value": 1,
+                "input_code": attempt,
                 "simulated": simulated,
                 "device": publisher.device_name,
                 "code": code,

@@ -39,28 +39,27 @@ class KitchenTimerCoordinator:
                     "value": data.get("value") == 0
                 })
 
-            action = data.get("action")
-            match action:
-                case "set":
-                    self._command_queue.put({
-                        "type": "display_command",
-                        "duration": int(data.get("duration", 0)),
-                    })
-                case "set_increment":
-                    self._command_queue.put({
-                        "type": "display_command",
-                        "increment_interval": int(data.get("seconds", 30)),
-                    })
-                case "stop_blink":
-                    self._command_queue.put({
-                        "type": "display_command",
-                        "stop": True,
-                    })
-                case "add":
-                    self._command_queue.put({
-                        "type": "display_command",
-                        "add": int(data.get("seconds", 30)),
-                    })
+            action = data.get("action", "")
+            if action == "set":
+                self._command_queue.put({
+                    "type": "display_command",
+                    "duration": int(data.get("duration", 0)),
+                })
+            elif action == "set_increment":
+                self._command_queue.put({
+                    "type": "display_command",
+                    "increment_interval": int(data.get("seconds", 30)),
+                })
+            elif action == "stop_blink":
+                self._command_queue.put({
+                    "type": "display_command",
+                    "stop": True,
+                })
+            elif action == "add":
+                self._command_queue.put({
+                    "type": "display_command",
+                    "add": int(data.get("seconds", 30)),
+                })
 
         except Exception as e:
             print(f"{prefix} Invalid MQTT payload: {e}")
