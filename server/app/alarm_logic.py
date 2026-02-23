@@ -16,6 +16,7 @@ from typing import Optional
 
 from influxdb_client import Point
 
+from .config import get_settings
 from .dependencies import AppDependencies
 from .state import HouseState
 
@@ -25,20 +26,17 @@ MOTION_LIGHT_SECONDS: float = 10.0  # DL stays on this long
 ARM_GRACE_SECONDS: float = 10.0  # delay before arming completes
 DOOR_ENTRY_GRACE_SECONDS: float = 10.0  # req 4b: window to enter PIN after door
 OCCUPANCY_WINDOW_SECONDS: float = 5.0  # req 2: recent DUS window size
-GYRO_THRESHOLD: float = 50.0  # req 6: minimum |delta| to trigger alarm
+GYRO_THRESHOLD: float = 5.0  # req 6: minimum |delta| to trigger alarm
 
 # Door PIR -> paired distance sensor
 _DPIR_TO_DUS: dict[str, str] = {"DPIR1": "DUS1", "DPIR2": "DUS2"}
-
-# All motion sensors relevant to point 5
-_ALL_DPIR_CODES: frozenset[str] = frozenset({"DPIR1", "DPIR2", "DPIR3"})
 
 # Door sensors relevant to points 3 & 4b
 _DOOR_CODES: frozenset[str] = frozenset({"DS1", "DS2"})
 
 
 # MQTT command topic prefix (must match broker settings)
-_CMD_PREFIX = f"smarthome/commands"
+_CMD_PREFIX = "smarthome/commands"
 
 
 class AlarmLogic:
@@ -148,9 +146,12 @@ class AlarmLogic:
                     if reason and reason.startswith("unlocked_door:"):
                         self._deactivate_alarm()
 
-    def on_membrane_attempt(self, code: str, success: bool) -> None:
+    def on_membrane_attempt(self, input: str) -> None:
         """Called when a complete 4-digit+# sequence is entered on DMS."""
-        if not success:
+        settings = get_settings()
+        print(input)
+        if input != settings.alarm_pin:
+            print("Wrong code")
             return
 
         now = time.monotonic()
@@ -181,17 +182,17 @@ class AlarmLogic:
     # ── Alarm state changes ───────────────────────────────────────────────────
 
     def _trigger_alarm(self, reason: str) -> None:
-        house = HouseState()
-        if house.get_alarm()["active"]:
-            return  # already ringing, nothing to do
+        with self._lock:
+            house = HouseState()
+            if house.get_alarm()["active"]:
+                return
 
-        house.set_alarm(active=True, reason=reason)
-        house.set_arm_pending(False)
-        if self._arm_timer:
-            with self._lock:
-                if self._arm_timer:
-                    self._arm_timer.cancel()
-                    self._arm_timer = None
+            house.set_alarm(active=True, reason=reason)
+            house.set_arm_pending(False)
+
+            if self._arm_timer:
+                self._arm_timer.cancel()
+                self._arm_timer = None
 
         print(f"[ALARM] Activated — reason: {reason}")
         self._publish_command("DB", "start")  # turn buzzer on

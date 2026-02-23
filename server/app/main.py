@@ -126,7 +126,7 @@ def _update_state(data: dict) -> None:
             logic.on_door(code, int(value) if value is not None else 0)
 
         elif measurement == "membrane_attempt":
-            logic.on_membrane_attempt(code, bool(int(value)) if value is not None else False)
+            logic.on_membrane_attempt(data.get("input_code"))
 
         elif measurement == "gyroscope":
             logic.on_gyroscope(code, value)
