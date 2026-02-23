@@ -1,22 +1,22 @@
 import threading
 import time
 
+from components.button import press_button, run_btn, run_ds, switch_door_state
 from components.dht import run_dht
-from components.door_button import run_ds, run_btn, press_button
-from components.door_ultrasonic import run_dus
+from components.door_ultrasonic import run_dus, send_distance_event
 from components.gsg import run_gsg, send_gyro_event
-from components.motion import run_dpir
+from components.motion import run_dpir, send_motion_event
+from kitchen_timer_coordinator import start_kitchen_timer_coordinator
 from mqtt_publisher import init_mqtt_publisher
 from settings import get_device_config
-from kitchen_timer_coordinator import start_kitchen_timer_coordinator
 
 RUNNERS = {
-    "DS2":   run_ds,
-    "DUS2":  run_dus,
+    "DS2": run_ds,
+    "DUS2": run_dus,
     "DPIR2": run_dpir,
-    "BTN":   run_btn,      # BTN has the same button-press logic as a door sensor
-    "DHT3":  run_dht,
-    "GSG":   run_gsg,
+    "BTN": run_btn,
+    "DHT3": run_dht,
+    "GSG": run_gsg,
 }
 
 
@@ -33,6 +33,18 @@ def _start_sensors(device_config, hardware_config, threads, stop_event):
             print(f"[PI2] No runner for sensor {code}, skipping.")
             continue
         runner(_get_hw(hardware_config, code), threads, stop_event, code)
+
+
+def _list_commands():
+    print("=" * 54)
+    print("Commands:")
+    print("  gsg send <delta> — publish a gyroscope delta reading")
+    print("  btn press — press timer button")
+    print("  door open|close")
+    print("  dpir trigger")
+    print("  dus trigger <distance_cm>")
+    print("  exit | quit")
+    print("=" * 54)    
 
 
 def _console_thread(hardware_config, stop_event):
@@ -53,11 +65,7 @@ def _console_thread(hardware_config, stop_event):
             return
 
         if lower == "help":
-            print("Commands:")
-            print("  gsg send <delta>   — publish a gyroscope delta reading")
-            print("  btn press   — press timer button")
-            print()
-            print("  exit | quit")
+            _list_commands()
             continue
 
         parts = cmd.split()
@@ -69,8 +77,37 @@ def _console_thread(hardware_config, stop_event):
             except ValueError:
                 print("delta must be a number, e.g.  gsg send 120.5")
             continue
-        elif len(parts) == 2 and parts[0].lower() == "btn" and parts[1].lower() == "press":
+        if (
+            len(parts) == 2
+            and parts[0].lower() == "btn"
+            and parts[1].lower() == "press"
+        ):
             press_button("BTN")
+            continue
+
+        if len(parts) == 2 and parts[0].lower() == "door":
+            command = parts[1].lower()
+            if command not in ("open", "close"):
+                print("Invalid door command. Use 'open' or 'close'.")
+                continue
+            switch_door_state("DS2", command)
+            continue
+
+        if len(parts) == 2 and parts[0].lower() == "dpir":
+            send_motion_event("DPIR2")
+            continue
+
+        if (
+            len(parts) == 3
+            and parts[0].lower() == "dus"
+            and parts[1].lower() == "trigger"
+        ):
+            try:
+                distance = float(parts[2])
+                send_distance_event("DUS2", distance)
+            except ValueError:
+                print("Invalid distance value. Must be a number.")
+            continue
 
         print("Unknown command. Type 'help'.")
 
@@ -81,15 +118,18 @@ def run(settings):
         if isinstance(params, dict):
             params.setdefault("code", code)
 
+    _list_commands()
+
     publisher = init_mqtt_publisher(settings)
 
     threads = []
     stop_event = threading.Event()
 
-
     broker_settings = settings.get("mqtt")
 
-    kitchen_timer_coordinator, kitchen_timer_subscriber = start_kitchen_timer_coordinator(broker_settings, hardware_config)
+    kitchen_timer_coordinator, kitchen_timer_subscriber = (
+        start_kitchen_timer_coordinator(broker_settings, hardware_config)
+    )
 
     _start_sensors(device_config, hardware_config, threads, stop_event)
 
@@ -98,6 +138,7 @@ def run(settings):
     )
     threads.append(console_t)
     console_t.start()
+
 
     try:
         while not stop_event.is_set():
@@ -115,6 +156,7 @@ def run(settings):
 
     try:
         import RPi.GPIO as GPIO
+
         GPIO.cleanup()
     except ImportError:
         pass

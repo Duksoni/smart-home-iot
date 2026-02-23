@@ -3,7 +3,7 @@ import time
 
 from components.dht import run_dht
 from components.ir_receiver import run_ir_receiver, send_key
-from components.motion import run_dpir
+from components.motion import run_dpir, send_motion_event
 from lcd_screen_coordinator import start_lcd_screen_coordinator
 from mqtt_publisher import init_mqtt_publisher
 from rgb_light_coordinator import start_rgb_light_coordinator
@@ -19,9 +19,7 @@ def _get_hw_settings(hardware_config, code):
     return params
 
 
-def _start_sensor_threads(
-    device_config, hardware_config, threads, stop_event, rgb_led_code=None
-):
+def _start_sensor_threads(device_config, hardware_config, threads, stop_event):
     for code in device_config.get("sensors", []):
         runner = RUNNERS.get(code)
         if not runner:
@@ -29,6 +27,15 @@ def _start_sensor_threads(
         params = _get_hw_settings(hardware_config, code)
 
         runner(params, threads, stop_event, code)
+
+
+def _list_commands():
+    print("=" * 26)
+    print("Commands:")
+    print("  ir send <digit in [0,7]>")
+    print("  dpir trigger")
+    print("  exit | quit")
+    print("=" * 26)
 
 
 def _console_thread(hardware_config, stop_event):
@@ -49,11 +56,7 @@ def _console_thread(hardware_config, stop_event):
             stop_event.set()
             return
         if lower == "help":
-            print("=" * 20)
-            print("Commands:")
-            print("ir send <digit in [0,7]>")
-            print("lcd display <text>")
-            print("exit/quit")
+            _list_commands()
             continue
 
         parts = cmd.split()
@@ -63,6 +66,10 @@ def _console_thread(hardware_config, stop_event):
                 send_key(_get_hw_settings(hardware_config, "IR"), parts[2])
                 continue
 
+        if len(parts) == 2 and parts[0].lower() == "dpir":
+            send_motion_event("DPIR3")
+            continue
+
 
 def run(settings):
     device_name = "PI3"
@@ -70,6 +77,8 @@ def run(settings):
     for code, params in hardware_config.items():
         if isinstance(params, dict):
             params.setdefault("code", code)
+
+    _list_commands()
 
     publisher = init_mqtt_publisher(settings)
 
@@ -79,7 +88,9 @@ def run(settings):
     broker_settings = settings.get("mqtt")
 
     brgb_subscriber = start_rgb_light_coordinator(broker_settings, hardware_config)
-    lcd_screen_coordinator, lcd_screen_subscriber = start_lcd_screen_coordinator(broker_settings, hardware_config)
+    lcd_screen_coordinator, lcd_screen_subscriber = start_lcd_screen_coordinator(
+        broker_settings, hardware_config
+    )
 
     _start_sensor_threads(device_config, hardware_config, threads, stop_event)
 

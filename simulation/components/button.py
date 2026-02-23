@@ -1,8 +1,7 @@
-import time
 import threading
+import time
 
 from mqtt_publisher import get_publisher
-from simulators.door_button import run_door_sensor_simulator
 
 
 def ds_callback(state, code, simulated):
@@ -52,23 +51,28 @@ def btn_callback(state, code, simulated):
 
 
 def press_button(code):
-    print(f"Simulating {code} button press")
+    print("[SIM] BTN button -> pressed")
     btn_callback(0, code, True)
+
+
+def switch_door_state(code, new_state: str):
+    print(f"[SIM] {code} door state change -> {new_state}")
+    ds_callback(1 if new_state.lower() == "open" else 0, code, True)
 
 
 def run_btn(settings, threads, stop_event, code):
     simulated = settings.get("simulated", True)
 
     if simulated:
-        print(
-            "Simulate button press via console"
-        )
+        print("Simulate door opening and closing via console")
     else:
+        from sensors.button import BTN, run_button_loop
+
         interval = settings.get("interval")
 
         def callback(state, code_value):
             btn_callback(state, code_value, simulated)
-        from sensors.door_button import run_button_loop, BTN
+
         pin = settings.get("pin")
         debounce = settings.get("debounce_ms", 100)
         print(f"Starting real {code} loop on pin {pin}")
@@ -91,25 +95,10 @@ def run_ds(settings, threads, stop_event, code):
         ds_callback(state, code_value, simulated)
 
     if simulated:
-        print(f"Starting simulated {code}")
-        sim_cfg = settings.get("simulator", {})
-        thread = threading.Thread(
-            target=run_door_sensor_simulator,
-            args=(
-                interval,
-                callback,
-                stop_event,
-                code,
-                sim_cfg.get("toggle_probability", 0.3),
-                sim_cfg.get("initial_state", 0),
-            ),
-            name=f"simulator-{code.lower()}",
-            daemon=True,
-        )
-        threads.append(thread)
-        thread.start()
+        print("Simulate door state change via console")
     else:
-        from sensors.door_button import run_button_loop, BTN
+        from sensors.button import BTN, run_button_loop
+
         pin = settings.get("pin")
         debounce = settings.get("debounce_ms", 100)
         print(f"Starting real {code} loop on pin {pin}")

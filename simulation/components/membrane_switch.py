@@ -1,32 +1,10 @@
-"""
-Membrane switch (DMS) component.
-
-Responsibilities on the PI side:
-- Accept key presses (real GPIO or simulator/console)
-- Accumulate digits until '#' is received
-- Publish each key press as  measurement=membrane_key
-- Publish the PIN attempt result as  measurement=membrane_attempt  (value=1/0)
-
-All alarm logic (arming, disarming, triggering) lives on the SERVER, which
-reacts to the membrane_attempt messages it receives over MQTT.
-"""
-
 import threading
 import time
 
 from mqtt_publisher import get_publisher
-from simulators.membrane_switch import run_membrane_switch_simulator
 
 _valid_keys = [str(i) for i in range(10)] + ["#"]
-_password = "5279"
 _current_attempt: list[str] = []
-_auto_thread = None
-_auto_stop_event = None
-
-
-def set_password(new_password: str) -> None:
-    global _password
-    _password = new_password
 
 
 def _consume_current() -> str:
@@ -49,35 +27,20 @@ def send_key(settings, key: str) -> None:
     prefix = "[SIM]" if simulated else "[GPIO]"
     print(f"{prefix} DMS -> Key accepted: {key}")
 
-    publisher = get_publisher()
-    if publisher:
-        key_value = 10 if key == "#" else int(key)
-        publisher.enqueue_json(
-            publisher.build_topic("sensors", code),
-            {
-                "measurement": "membrane_key",
-                "value": key_value,
-                "key": key,
-                "simulated": simulated,
-                "device": publisher.device_name,
-                "code": code,
-            },
-        )
-
     if key != "#":
         return
 
     # Full sequence received — evaluate attempt
     attempt = _consume_current()
-    success = attempt == _password
-    print("Password accepted!" if success else "Wrong password! Try again.")
+    print(f"Sending DMS attempt: {attempt!r}")
 
+    publisher = get_publisher()
     if publisher:
         publisher.enqueue_json(
             publisher.build_topic("sensors", code),
             {
                 "measurement": "membrane_attempt",
-                "value": 1 if success else 0,
+                "value": 1,
                 "simulated": simulated,
                 "device": publisher.device_name,
                 "code": code,
@@ -86,11 +49,8 @@ def send_key(settings, key: str) -> None:
 
 
 def run_membrane_switch(settings, threads, stop_event, code):
-    if settings.get("pin_code"):
-        set_password(settings["pin_code"])
-
     if settings.get("simulated"):
-        print("Control DMS via console or by running it on auto loop")
+        print("Control DMS via console")
     else:
         print("Starting DMS loop on GPIO")
         thread = threading.Thread(
@@ -130,42 +90,6 @@ def _run_gpio_loop(settings, stop_event, code, delay=0.1):
         send_key(settings, key)
 
     run_dms_loop(dms, interval, callback, stop_event, code)
-
-
-def _auto_worker(delay, settings, stop_event):
-    run_membrane_switch_simulator(delay, settings, send_key, stop_event)
-
-
-def start_auto(settings, threads=None, delay=2) -> None:
-    global _auto_thread, _auto_stop_event
-    if _auto_thread and _auto_thread.is_alive():
-        print("DMS auto-simulator already running")
-        return
-
-    _auto_stop_event = threading.Event()
-    auto_delay = settings.get("auto_delay", delay)
-    _auto_thread = threading.Thread(
-        target=_auto_worker,
-        args=(auto_delay, settings, _auto_stop_event),
-        name="simulator-dms-auto",
-        daemon=True,
-    )
-    if threads is not None:
-        threads.append(_auto_thread)
-    _auto_thread.start()
-    print("DMS auto-simulator started")
-
-
-def stop_auto() -> None:
-    global _auto_thread, _auto_stop_event
-    if not _auto_thread:
-        print("DMS auto-simulator is not running")
-        return
-    _auto_stop_event.set()
-    _auto_thread.join(timeout=1)
-    _auto_thread = None
-    _auto_stop_event = None
-    print("DMS auto-simulator stopped")
 
 
 def send_sequence(settings, sequence: str) -> None:

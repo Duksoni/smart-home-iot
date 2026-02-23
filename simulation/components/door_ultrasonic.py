@@ -1,8 +1,7 @@
-import time
 import threading
+import time
 
 from mqtt_publisher import get_publisher
-from simulators.door_ultrasonic import run_dus_simulator
 
 
 def dus_callback(distance, code, simulated):
@@ -28,35 +27,23 @@ def dus_callback(distance, code, simulated):
         publisher.enqueue_json(topic, payload)
 
 
+def send_distance_event(code: str, distance: float):
+    print(f"[SIM] {code} distance -> {distance}cm")
+    dus_callback(distance, code, True)
+
+
 def run_dus(settings, threads, stop_event, code):
-    """Generic ultrasonic runner — works for DUS1 and DUS2."""
     simulated = settings.get("simulated", True)
     interval = settings.get("interval", 5)
 
-    def callback(distance, code_value):
-        dus_callback(distance, code_value, simulated)
-
     if simulated:
-        print(f"Starting simulated {code}")
-        sim_cfg = settings.get("simulator", {})
-        thread = threading.Thread(
-            target=run_dus_simulator,
-            args=(
-                interval,
-                callback,
-                stop_event,
-                code,
-                sim_cfg.get("initial_distance", 80.0),
-                sim_cfg.get("min_distance", 2.0),
-                sim_cfg.get("max_distance", 120.0),
-            ),
-            name=f"simulator-{code.lower()}",
-            daemon=True,
-        )
-        threads.append(thread)
-        thread.start()
+        print("Simulate distance via console")
     else:
-        from sensors.door_ultrasonic import run_dus_loop, DUS
+        from sensors.door_ultrasonic import DUS, run_dus_loop
+
+        def callback(distance, code_value):
+            dus_callback(distance, code_value, simulated)
+
         trigger_pin = settings.get("trigger_pin")
         echo_pin = settings.get("echo_pin")
         print(f"Starting real {code} loop on trigger={trigger_pin} echo={echo_pin}")
@@ -69,7 +56,3 @@ def run_dus(settings, threads, stop_event, code):
         )
         threads.append(thread)
         thread.start()
-
-
-# Keep old name as alias
-run_dus1 = run_dus
