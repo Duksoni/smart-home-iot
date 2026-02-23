@@ -1,7 +1,7 @@
-from ast import List
+import time
+from typing import List
 
 import RPi.GPIO as GPIO
-import time
 
 
 class Display4Segment:
@@ -32,14 +32,14 @@ class Display4Segment:
             '9':(1,1,1,1,0,1,1)
         }
 
-        def display(self, digits: str):
-            for digit in range(4):
-                for loop in range(0,7):
-                    GPIO.output(self.segments[loop], self.num[digits[digit]][loop])
-                GPIO.output(self.digits[digit], 0)
-                time.sleep(0.001)
-                GPIO.output(self.digits[digit], 1)
+    def display(self, digits: str):
+        for digit in range(4):
+            for loop in range(0,7):
+                GPIO.output(self.segments[loop], self.num[digits[digit]][loop])
+            GPIO.output(self.digits[digit], 0)
+            time.sleep(0.001)
+            GPIO.output(self.digits[digit], 1)
 
-        def clear(self):
-            for digit in range(4):
-                GPIO.output(self.digits[digit], 1)
+    def clear(self):
+        for digit in range(4):
+            GPIO.output(self.digits[digit], 1)
