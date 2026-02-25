@@ -1,4 +1,14 @@
 {
+  "__inputs": [
+    {
+      "name": "DS_INFLUXDB",
+      "label": "InfluxDB",
+      "description": "",
+      "type": "datasource",
+      "pluginId": "influxdb",
+      "pluginName": "InfluxDB"
+    }
+  ],    
   "annotations": {
     "list": [
       {
@@ -18,7 +28,6 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 0,
   "links": [],
   "panels": [
     {
@@ -102,7 +111,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "12.3.2",
+      "pluginVersion": "12.4.0",
       "targets": [
         {
           "datasource": {
@@ -197,7 +206,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "12.3.2",
+      "pluginVersion": "12.4.0",
       "targets": [
         {
           "query": "from(bucket: \"smart_home_bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"humidity\" or r[\"_measurement\"] == \"temperature\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"code\"] == \"DHT2\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)",
@@ -255,10 +264,10 @@
         "cellHeight": "sm",
         "showHeader": true
       },
-      "pluginVersion": "12.3.2",
+      "pluginVersion": "12.4.0",
       "targets": [
         {
-          "query": "from(bucket: \"smart_home_bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"ir_receiver\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"code\"] == \"IR\")",
+          "query": "from(bucket: \"smart_home_bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"ir_receiver\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"code\"] == \"IR\")\r\n  |> sort(columns: [\"_time\"], desc: true)  ",
           "refId": "A"
         }
       ],
@@ -313,10 +322,10 @@
         "cellHeight": "sm",
         "showHeader": true
       },
-      "pluginVersion": "12.3.2",
+      "pluginVersion": "12.4.0",
       "targets": [
         {
-          "query": "from(bucket: \"smart_home_bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"rgb_led\")\r\n  |> filter(fn: (r) => r[\"code\"] == \"BRGB\")",
+          "query": "from(bucket: \"smart_home_bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"rgb_led\")\r\n  |> filter(fn: (r) => r[\"code\"] == \"BRGB\")\r\n  |> sort(columns: [\"_time\"], desc: true)  ",
           "refId": "A"
         }
       ],
@@ -331,41 +340,17 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
+            "mode": "thresholds"
           },
           "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
             },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
+            "footer": {
+              "reducers": []
             },
-            "showPoints": "auto",
-            "showValues": false,
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
+            "inspect": false
           },
           "mappings": [
             {
@@ -408,27 +393,18 @@
       },
       "id": 5,
       "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": false
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
+        "cellHeight": "sm",
+        "showHeader": true
       },
-      "pluginVersion": "12.3.2",
+      "pluginVersion": "12.4.0",
       "targets": [
         {
-          "query": "from(bucket: \"smart_home_bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"motion\")\r\n  |> filter(fn: (r) => r._field == \"value\")\r\n  |> filter(fn: (r) => r.code == \"DPIR3\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)",
+          "query": "from(bucket: \"smart_home_bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"motion\")\r\n  |> filter(fn: (r) => r._field == \"value\")\r\n  |> filter(fn: (r) => r.code == \"DPIR3\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> sort(columns: [\"_time\"], desc: true)  ",
           "refId": "A"
         }
       ],
       "title": "Motion (DPIR3)",
-      "type": "timeseries"
+      "type": "table"
     }
   ],
   "preload": false,
@@ -448,5 +424,6 @@
   "timezone": "browser",
   "title": "Smart Home Sensors (PI3)",
   "uid": "adscv6q",
-  "version": 11
+  "version": 5,
+  "weekStart": ""
 }

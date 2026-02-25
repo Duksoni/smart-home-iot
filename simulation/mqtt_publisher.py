@@ -8,13 +8,13 @@ import paho.mqtt.publish as publish
 
 
 class MqttBatchPublisher:
-    def __init__(self, settings):
+    def __init__(self, device, settings):
         self.host = settings.get("host")
         self.port = settings.get("port")
         self.base_topic = settings.get("base_topic")
         self.batch_size = settings.get("publish_batch_size")
         self.flush_interval = settings.get("publish_flush_interval")
-        self.device_name = settings.get("device")
+        self.device_name = device
         self._queue = queue.Queue()
         self._stop_event = threading.Event()
         self._thread = threading.Thread(
@@ -68,7 +68,7 @@ def init_mqtt_publisher(settings: dict):
     mqtt_settings = settings.get("mqtt")
     if not mqtt_settings:
         raise ValueError("MQTT settings are not configured")
-    _publisher = MqttBatchPublisher(mqtt_settings)
+    _publisher = MqttBatchPublisher(settings.get("device"), mqtt_settings)
     return _publisher
 
 
