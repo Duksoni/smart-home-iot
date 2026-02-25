@@ -1,5 +1,5 @@
 {
-    "device": "PI2",
+    "device": "PI3",
     "device_map": {
         "PI1": {
             "sensors": [

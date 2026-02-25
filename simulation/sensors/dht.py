@@ -96,6 +96,10 @@ def run_dht_loop(dht: DHT, delay, callback, stop_event):
         check = dht.read_DHT11()
         code = parse_check_code(check)
         humidity, temperature = dht.humidity, dht.temperature
+        if humidity < 0.0:
+            humidity = 0.0
+        if humidity > 100.0:
+            humidity = 100.0
         callback(humidity, temperature, code)
         if stop_event.is_set():
             break

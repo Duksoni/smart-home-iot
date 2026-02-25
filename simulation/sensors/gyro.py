@@ -27,6 +27,10 @@ class GSG:
         gz = gyro[2] / 131.0
 
         magnitude = math.sqrt(gx * gx + gy * gy + gz * gz)
+        # filter noise
+        if magnitude < 0.5:
+            magnitude = 0.0 
+
         return magnitude
     
 def run_gsg_loop(gsg: GSG, delay: float, callback, stop_event):

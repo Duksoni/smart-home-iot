@@ -25,11 +25,11 @@ export class Dashboard {
             },
             {
                 id: 'PI2',
-                url: this.sanitizer.bypassSecurityTrustResourceUrl("https://example.com/tmp1"),
+                url: this.sanitizer.bypassSecurityTrustResourceUrl(environment.grafanaPi2DashboardUrl),
             },
             {
                 id: 'PI3',
-                url: this.sanitizer.bypassSecurityTrustResourceUrl("https://example.com/tmp2"),
+                url: this.sanitizer.bypassSecurityTrustResourceUrl(environment.grafanaPi3DashboardUrl),
             },
         ];
     }

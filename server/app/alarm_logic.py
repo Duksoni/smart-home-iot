@@ -26,7 +26,7 @@ MOTION_LIGHT_SECONDS: float = 10.0  # DL stays on this long
 ARM_GRACE_SECONDS: float = 10.0  # delay before arming completes
 DOOR_ENTRY_GRACE_SECONDS: float = 10.0  # req 4b: window to enter PIN after door
 OCCUPANCY_WINDOW_SECONDS: float = 5.0  # req 2: recent DUS window size
-GYRO_THRESHOLD: float = 5.0  # req 6: minimum |delta| to trigger alarm
+GYRO_THRESHOLD: float = 20.0  # req 6: minimum |delta| to trigger alarm
 
 # Door PIR -> paired distance sensor
 _DPIR_TO_DUS: dict[str, str] = {"DPIR1": "DUS1", "DPIR2": "DUS2"}
