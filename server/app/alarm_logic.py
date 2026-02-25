@@ -252,12 +252,15 @@ class AlarmLogic:
             # Default threshold: 80 cm
             delta = 1 if avg_recent < 80.0 else -1
 
-        HouseState().delta_people(delta)
+        house = HouseState()
+        house.delta_people(delta)
+        current_count = house.get_people_count()
         self._write_occupancy_event(delta)
+        self._write_people_count(current_count)
         action = "entered" if delta > 0 else "left"
         print(
             f"[OCCUPANCY] Person {action} via {dpir_code} — "
-            f"count={HouseState().get_people_count()}"
+            f"count={current_count}"
         )
 
     # ── Timer management ──────────────────────────────────────────────────────
@@ -415,3 +418,26 @@ class AlarmLogic:
             )
         except Exception as exc:
             print(f"[ALARM] InfluxDB occupancy write failed: {exc}")
+
+    def _write_people_count(self, count: int) -> None:
+        write_api = AppDependencies().get_write_api()
+        if write_api is None:
+            return
+
+        from .config import get_settings
+        settings = get_settings()
+
+        point = (
+            Point("people_count")
+            .tag("code", "occupancy")
+            .field("value", int(count))
+        )
+
+        try:
+            write_api.write(
+                bucket=settings.influxdb_bucket,
+                org=settings.influxdb_org,
+                record=point,
+            )
+        except Exception as exc:
+            print(f"[OCCUPANCY] InfluxDB count write failed: {exc}")
