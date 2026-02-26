@@ -58,5 +58,11 @@ export class AlarmService {
             this.snackBarRef?.dismiss();
             this.snackBarRef = null;
         }
+
+        if (!status.active) {
+            this.snackBarRef?.dismiss();
+            this.snackBarRef = null;
+            return;
+        }
     }
 }

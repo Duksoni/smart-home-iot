@@ -141,10 +141,12 @@ class AlarmLogic:
                 # Only auto-clear if no other unlock-alarm door is still open
                 with self._lock:
                     any_remaining = bool(self._unlock_alarm_doors)
-                if not any_remaining and house.get_alarm()["active"]:
-                    reason = house.get_alarm().get("reason", "")
-                    if reason and reason.startswith("unlocked_door:"):
-                        self._deactivate_alarm()
+                if not any_remaining:
+                    alarm_state = house.get_alarm()
+                    if not alarm_state["active"]:
+                        reason = alarm_state.get("reason", "")
+                        if reason and reason.startswith("unlocked_door:"):
+                            self._deactivate_alarm()
 
     def on_membrane_attempt(self, input: str) -> None:
         """Called when a complete 4-digit+# sequence is entered on DMS."""
