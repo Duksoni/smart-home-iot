@@ -143,8 +143,8 @@ class AlarmLogic:
                     any_remaining = bool(self._unlock_alarm_doors)
                 if not any_remaining:
                     alarm_state = house.get_alarm()
-                    if not alarm_state["active"]:
-                        reason = alarm_state.get("reason", "")
+                    reason = alarm_state.get("reason", "")
+                    if not alarm_state["armed"] and alarm_state["active"]:
                         if reason and reason.startswith("unlocked_door:"):
                             self._deactivate_alarm()
 

@@ -33,7 +33,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "ffefvizr48lq8c"
+        "uid": "efehm5qjxsa9sd"
       },
       "fieldConfig": {
         "defaults": {
@@ -110,7 +110,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "ffefvizr48lq8c"
+        "uid": "efehm5qjxsa9sd"
       },
       "fieldConfig": {
         "defaults": {
@@ -174,7 +174,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ffefvizr48lq8c"
+            "uid": "efehm5qjxsa9sd"
           },
           "query": "from(bucket: \"smart_home_bucket\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"motion\")\n  |> filter(fn: (r) => r._field == \"value\")\n  |> filter(fn: (r) => r.code == \"DPIR1\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> sort(columns: [\"_time\"], desc: true)  ",
           "refId": "A"
@@ -186,7 +186,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "ffefvizr48lq8c"
+        "uid": "efehm5qjxsa9sd"
       },
       "fieldConfig": {
         "defaults": {
@@ -256,7 +256,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ffefvizr48lq8c"
+            "uid": "efehm5qjxsa9sd"
           },
           "query": "from(bucket: \"smart_home_bucket\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"button\")\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\n  |> filter(fn: (r) => r[\"code\"] == \"DS1\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> group()\n  |> sort(columns: [\"_time\"], desc: true)",
           "refId": "A"
@@ -268,7 +268,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "ffefvizr48lq8c"
+        "uid": "efehm5qjxsa9sd"
       },
       "fieldConfig": {
         "defaults": {
@@ -331,7 +331,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ffefvizr48lq8c"
+            "uid": "efehm5qjxsa9sd"
           },
           "query": "from(bucket: \"smart_home_bucket\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"membrane_attempt\")\n  |> filter(fn: (r) => r._field == \"value\")\n  |> filter(fn: (r) => r.code == \"DMS\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> sort(columns: [\"_time\"], desc: true)",
           "refId": "A"
@@ -343,7 +343,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "ffefvizr48lq8c"
+        "uid": "efehm5qjxsa9sd"
       },
       "fieldConfig": {
         "defaults": {
@@ -407,7 +407,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ffefvizr48lq8c"
+            "uid": "efehm5qjxsa9sd"
           },
           "query": "from(bucket: \"smart_home_bucket\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"led\" and r._field == \"value\" and r.code == \"DL\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> group()\n  |> sort(columns: [\"_time\"], desc: true)  ",
           "refId": "A"
@@ -419,7 +419,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "ffefvizr48lq8c"
+        "uid": "efehm5qjxsa9sd"
       },
       "fieldConfig": {
         "defaults": {
@@ -504,7 +504,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ffefvizr48lq8c"
+            "uid": "efehm5qjxsa9sd"
           },
           "query": "from(bucket: \"smart_home_bucket\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"ultrasonic\")\n  |> filter(fn: (r) => r._field == \"value\")\n  |> filter(fn: (r) => r.code == \"DUS1\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)",
           "refId": "A"
@@ -516,7 +516,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "ffefvizr48lq8c"
+        "uid": "efehm5qjxsa9sd"
       },
       "fieldConfig": {
         "defaults": {
@@ -598,7 +598,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "ffefvizr48lq8c"
+            "uid": "efehm5qjxsa9sd"
           },
           "query": "from(bucket: \"smart_home_bucket\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n |> filter(fn: (r) => r._measurement == \"buzzer\" and r.code == \"DB\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> group(columns: [\"code\"], mode:\"by\")\n  |> sort(columns: [\"_time\"], desc: true)",
           "refId": "A"

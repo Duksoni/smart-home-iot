@@ -68,7 +68,7 @@
         },
         "DB": {
             "pin": 12,
-            "simulated": true,
+            "simulated": false,
             "active_high": true,
             "pwm": false,
             "frequency": 2000,
@@ -104,7 +104,7 @@
                 21,
                 26
             ],
-            "simulated": true,
+            "simulated": false,
             "auto_delay": 2,
             "key_delay": 0.15
         },
@@ -228,7 +228,7 @@
         }
     },
     "mqtt": {
-        "host": "localhost",
+        "host": "192.168.107.196",
         "port": 1883,
         "base_topic": "smarthome",
         "command_base_topic": "smarthome/commands",

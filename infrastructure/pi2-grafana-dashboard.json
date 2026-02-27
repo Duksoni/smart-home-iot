@@ -33,7 +33,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "dfebhfq58wlc0a"
+        "uid": "efehm5qjxsa9sd"
       },
       "fieldConfig": {
         "defaults": {
@@ -124,7 +124,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "dfebhfq58wlc0a"
+        "uid": "efehm5qjxsa9sd"
       },
       "fieldConfig": {
         "defaults": {
@@ -217,7 +217,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "dfebhfq58wlc0a"
+        "uid": "efehm5qjxsa9sd"
       },
       "fieldConfig": {
         "defaults": {
@@ -308,7 +308,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "dfebhfq58wlc0a"
+        "uid": "efehm5qjxsa9sd"
       },
       "fieldConfig": {
         "defaults": {
@@ -387,7 +387,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "dfebhfq58wlc0a"
+            "uid": "efehm5qjxsa9sd"
           },
           "query": "from(bucket: \"smart_home_bucket\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"button\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"code\"] == \"DS2\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\r\n  |> group()\r\n  |> sort(columns: [\"_time\"], desc: true)  ",
           "refId": "A"
@@ -399,7 +399,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "dfebhfq58wlc0a"
+        "uid": "efehm5qjxsa9sd"
       },
       "fieldConfig": {
         "defaults": {
@@ -467,7 +467,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "dfebhfq58wlc0a"
+        "uid": "efehm5qjxsa9sd"
       },
       "fieldConfig": {
         "defaults": {
